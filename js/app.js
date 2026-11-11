@@ -511,6 +511,9 @@ function datei(name, inhalt, typ) { const a = document.createElement('a'); a.hre
 
 
 /* ---------- Bestandsaufnahme: geführte Fragen je Gerät ---------- */
+// Grundbestand nachziehen: neue Meldungen aus dem Abzug übernehmen, dort entfallene Start-Buchungen schließen
+for (const m of SEED.mel) if (!S.mel.some(x => x.id === m.id)) S.mel.push({ ...m });
+for (const o of S.out) if (!o.zu && String(o.id).startsWith('s-') && !SEED.out.some(x => x.id === o.id)) o.zu = Date.now();
 if (!S.inv) S.inv = { start: '', done: {} };
 for (const i of SEED.items) if (i.erf && !S.inv.done[i.id]) { S.inv.done[i.id] = 1; if (!S.inv.start) S.inv.start = i.lc || ''; }
 for (const b of S.bed) if (!b.st) b.st = b.zu ? 'da' : 'offen';
