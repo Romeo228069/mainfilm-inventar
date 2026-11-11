@@ -510,6 +510,7 @@ function datei(name, inhalt, typ) { const a = document.createElement('a'); a.hre
 
 /* ---------- Bestandsaufnahme: geführte Fragen je Gerät ---------- */
 if (!S.inv) S.inv = { start: '', done: {} };
+for (const i of SEED.items) if (i.erf && !S.inv.done[i.id]) { S.inv.done[i.id] = 1; if (!S.inv.start) S.inv.start = i.lc || ''; }
 for (const b of S.bed) if (!b.st) b.st = b.zu ? 'da' : 'offen';
 const ZU_L = { top: 'Einwandfrei', ok: 'Gebrauchsspuren, funktioniert', eing: 'Eingeschränkt nutzbar', defekt: 'Defekt' };
 const NUTZ_L = { oft: 'Oft im Einsatz', selten: 'Selten im Einsatz', weg: 'Wird nicht mehr gebraucht' };
