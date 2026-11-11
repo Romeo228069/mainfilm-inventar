@@ -517,6 +517,7 @@ for (const o of S.out) if (!o.zu && String(o.id).startsWith('s-') && !SEED.out.s
 if (!S.inv) S.inv = { start: '', done: {} };
 for (const i of SEED.items) if (i.erf && !S.inv.done[i.id]) { S.inv.done[i.id] = 1; if (!S.inv.start) S.inv.start = i.lc || ''; }
 for (const b of S.bed) if (!b.st) b.st = b.zu ? 'da' : 'offen';
+for (const sb of SEED.bed || []) if (!S.bed.some(x => x.id === sb.id)) S.bed.push({ ...sb });
 for (const sb of SEED.bed || []) if (sb.st === 'da') { const b = S.bed.find(x => x.id === sb.id); if (b && b.st !== 'da') { b.st = 'da'; b.inv = 1; b.zu = Date.now(); } }
 const ZU_L = { top: 'Einwandfrei', ok: 'Gebrauchsspuren, funktioniert', eing: 'Eingeschränkt nutzbar', defekt: 'Defekt' };
 const NUTZ_L = { oft: 'Oft im Einsatz', selten: 'Selten im Einsatz', weg: 'Wird nicht mehr gebraucht' };
