@@ -272,32 +272,40 @@ function aufgaben() {
   for (const i of IT) if (i.frage) a.push({ p: 4, i, m: ['Klären', 'gap'], t: i.frage, k: [['bearb', 'Korrigieren', i.id], ['geklaert', 'Stimmt so', i.id]] });
   return a.sort((x, y) => x.p - y.p);
 }
+function fallKarte(a) {
+  return `<div class="fall"><button class="fall-b" data-a="geraet" data-id="${a.i.id}">${bild(a.i)}<div><i class="${a.m[1]}">${a.m[0]}</i><b>${esc(a.i.n)}</b><span>${esc(a.t)}</span></div></button><div class="fall-k">${a.k.map(k => `<button class="kn" data-a="${k[0]}" data-id="${k[2]}" data-v="${k[3] || ''}">${k[1]}</button>`).join('')}</div></div>`;
+}
 function vHeute() {
   const z = { da: 0, unterwegs: 0, defekt: 0, fehlt: 0, neu: 0 }; for (const i of IT) z[i.st]++;
-  const auf = aufgaben();
-  const neu = IT.filter(i => i.z === 'neu').length, ohneFoto = IT.filter(i => !i.b).length;
-  const ohneSn = IT.filter(i => ['Camera', 'Lens', 'Monitor'].includes(i.k) && !i.sn).length;
+  const da = z.da + z.neu, n = IT.length || 1, auf = aufgaben();
   const offen = S.out.filter(o => !o.zu && o.pr && BY[o.itemId]);
-  const hh = heute();
   const prs = {}; for (const o of offen) (prs[o.pr] = prs[o.pr] || []).push(o);
-  const letzte = S.ev.slice(-6).reverse();
-  return `<div class="zahlen">${Object.entries(ST).map(([k, [l, c]]) => `<button data-a="filterSt" data-v="${k}"><b class="num" data-zahl="${z[k]}">0</b><span><i class="pkt ${c}"></i>${l}</span></button>`).join('')}</div>
-  <div class="aktionen" style="margin-top:18px">
-    <button data-a="tab" data-tab="inventur"><i style="color:var(--mag-ink)">${IC.regal}</i><div><b>Bestandsaufnahme: ${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</b><span>Fragen je Gerät durchklicken, bis der Stand stimmt</span></div></button>
-    <button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf: ${S.bed.filter(b => b.st === 'offen').length} zu besorgen, ${S.bed.filter(b => b.st === 'bestellt').length} bestellt</b><span>Bedarf sammeln, Bestellung abhaken, Neues einpflegen</span></div></button>
-    <button data-a="tab" data-tab="mieten"><i>${IC.euro}</i><div><b>Mieten oder kaufen: ${mietKat().filter(k => mietRechne(k).urteil === 'kaufen').length} Käufe lohnen sich</b><span>Was wir leihen, wie oft, und ab wann sich der Kauf rechnet</span></div></button>
+  const erf = IT.filter(i => S.inv.done[i.id]).length, kauf = mietKat().filter(k => mietRechne(k).urteil === 'kaufen').length;
+  return `<p class="gruss">${S.me ? 'Hallo ' + esc(S.me) : 'Mainfilm Inventar'}</p><h1 class="titel">Alles im Blick</h1>
+  <div class="ringreihe">
+    <div class="ring"><svg viewBox="0 0 136 136" width="136" height="136"><circle class="bahn" cx="68" cy="68" r="56"/><circle class="wert" cx="68" cy="68" r="56" style="--ziel:${Math.round(352 * (1 - da / n))}"/></svg><div><span><b class="num" data-zahl="${da}">0</b><small>von ${IT.length} da</small></span></div></div>
+    <div class="werte">
+      <button data-a="filterSt" data-v="unterwegs"><i class="pkt rent"></i>Unterwegs<b>${z.unterwegs}</b></button>
+      <button data-a="filterSt" data-v="fehlt"><i class="pkt bad"></i>Fehlt<b>${z.fehlt}</b></button>
+      <button data-a="filterSt" data-v="defekt"><i class="pkt warn"></i>Defekt<b>${z.defekt}</b></button>
+    </div>
   </div>
-  <h2>Zu erledigen <small>${auf.length ? auf.length + ' offen' : ''}</small></h2>
-  <div class="zeilen">${auf.length ? auf.slice(0, 12).map(a => `<div class="zeile breit"><button data-a="geraet" data-id="${a.i.id}" aria-label="${esc(a.i.n)}">${bild(a.i)}</button><div class="t"><span class="marke ${a.m[1]}">${a.m[0]}</span><b>${esc(a.i.n)}</b><span>${esc(a.t)}</span></div><div class="akt">${a.k.map((k, n) => `<button class="kn ${n ? 'leise' : ''}" data-a="${k[0]}" data-id="${k[2]}" data-v="${k[3] || ''}">${k[1]}</button>`).join('')}</div></div>`).join('') : '<p class="leer">Nichts offen. Alles da, wo es sein soll.</p>'}</div>
-  ${auf.length > 12 ? `<p class="notiz">und ${auf.length - 12} weitere</p>` : ''}
-  <h2>Bestand pflegen</h2>
-  <div class="aktionen">
-    ${ohneFoto ? `<button data-a="regal" data-v="foto"><i>${IC.foto}</i><div><b>${ohneFoto} Positionen ohne Foto</b><span>Mit dem Telefon direkt am Regal aufnehmen</span></div></button>` : ''}
-    ${ohneSn ? `<button data-a="regal" data-v="sn"><i>${IC.frage}</i><div><b>${ohneSn} Kameras, Objektive und Monitore ohne Seriennummer</b><span>Wichtig für Versicherung und Diebstahl</span></div></button>` : ''}
+  <div class="drei">
+    <button data-a="scan">${IC.scan}Scannen</button>
+    <button data-a="mit">${IC.raus}Mitnehmen</button>
+    <button data-a="zurueckWahl">${IC.rein}Zurück</button>
   </div>
-  <h2>Unterwegs und geplant</h2>
+  <div class="zwei"><button class="kn" data-a="melden">Kaputt oder fehlt</button><button class="kn" data-a="mietNeu">Miete eintragen</button></div>
+  <h2>Braucht dich <small>${auf.length || 'nichts offen'}</small></h2>
+  ${auf.length ? `<div class="zug">${auf.slice(0, 8).map(fallKarte).join('')}${auf.length > 8 ? `<button class="fall alle" data-a="alleAufgaben">Alle ${auf.length} ansehen</button>` : ''}</div>` : '<p class="leer">Alles da, wo es sein soll.</p>'}
+  <h2>Unterwegs <small>${Object.keys(prs).length ? Object.keys(prs).length + (Object.keys(prs).length === 1 ? ' Projekt' : ' Projekte') : ''}</small></h2>
   ${Object.keys(prs).length ? Object.entries(prs).map(([p, ls]) => projektZeile(p, ls)).join('') : '<p class="leer">Kein Gerät auf einem Projekt.</p>'}
-  ${letzte.length ? `<h2>Zuletzt</h2><ul class="verlauf">${letzte.map(evZeile).join('')}</ul>` : ''}`;
+  <h2>Außerdem</h2>
+  <div class="kacheln">
+    <button data-a="tab" data-tab="inventur"><b class="num">${erf}/${IT.length}</b><span>Inventur erfasst</span></button>
+    <button data-a="tab" data-tab="einkauf"><b class="num">${S.bed.filter(b => b.st === 'offen').length}</b><span>zu besorgen</span></button>
+    <button data-a="tab" data-tab="mieten"><b class="num">${kauf}</b><span>Käufe lohnen sich</span></button>
+  </div>`;
 }
 function evZeile(e) {
   const i = BY[e.itemId]; const c = { raus: 'pr', rein: 'ok', defekt: 'warn', fehlt: 'bad', ok: 'ok' }[e.art] || '';
@@ -318,10 +326,10 @@ function vBestand() {
   l = F.q && !cmd ? suche(F.q, l) : cmd ? [cmd.i] : [...l].sort((a, b) => Object.keys(KAT).indexOf(a.k) - Object.keys(KAT).indexOf(b.k) || a.n.localeCompare(b.n));
   const kz = {}; for (const i of IT) kz[i.k] = (kz[i.k] || 0) + 1;
   const CT = { mit: 'Mitnehmen', defekt: 'Defekt melden', fehlt: 'Fehlt melden', zurueck: 'Zurückbuchen', ok: 'Als geprüft bestätigen' };
-  return `<div class="suche">${IC.lupe}<input id="q" type="search" enterkeyhint="search" autocomplete="off" placeholder="Suchen oder sagen: FX3 defekt" value="${esc(F.q)}" aria-label="Bestand durchsuchen">${F.q ? '<button class="x" data-a="qLeer" aria-label="Suche leeren">✕</button>' : ''}</div>
+  return `<h1 class="titel" style="display:flex;justify-content:space-between;align-items:center;gap:12px">Geräte<button class="kn" data-a="neu" style="font:600 15px var(--text);text-transform:none">${IC.plus} Neu</button></h1><div class="suche">${IC.lupe}<input id="q" type="search" enterkeyhint="search" autocomplete="off" placeholder="Gerät suchen" value="${esc(F.q)}" aria-label="Bestand durchsuchen">${F.q ? '<button class="x" data-a="qLeer" aria-label="Suche leeren">✕</button>' : ''}</div>
   <div id="cmd">${cmd ? `<button class="befehl" data-a="befehl"><i>${CT[cmd.art]}</i><span>${esc(cmd.i.n)}${cmd.pr ? ' · ' + esc(cmd.pr) : ''}</span></button>` : ''}</div>
   <div class="filter"><button data-a="kat" data-v="" aria-pressed="${!F.kat}">Alles<em>${IT.length}</em></button>${Object.entries(KAT).filter(([k]) => kz[k]).map(([k, lb]) => `<button data-a="kat" data-v="${k}" aria-pressed="${F.kat === k}">${lb}<em>${kz[k]}</em></button>`).join('')}</div>
-  <div class="filter zwei"><button data-a="st" data-v="" aria-pressed="${!F.st}">Jeder Zustand</button>${Object.entries(ST).map(([k, [lb]]) => `<button data-a="st" data-v="${k}" aria-pressed="${F.st === k}">${lb}</button>`).join('')}<button data-a="st" data-v="foto" aria-pressed="${F.st === 'foto'}">Ohne Foto</button></div>
+  <label class="feld" style="margin-top:6px">Zustand<select id="stSel"><option value="">Jeder Zustand</option>${Object.entries(ST).map(([k, [lb]]) => `<option value="${k}" ${F.st === k ? 'selected' : ''}>${lb}</option>`).join('')}<option value="foto" ${F.st === 'foto' ? 'selected' : ''}>Ohne Bild</option></select></label>
   <div class="raster" id="raster">${raster(l)}</div>`;
 }
 function raster(l) {
@@ -336,7 +344,7 @@ function vProjekte() {
   <p style="margin-top:20px"><button class="kn haupt gross" data-a="mit">${IC.raus} Geräte mitnehmen</button></p>`;
 }
 function vMehr() {
-  return `<div class="aktionen"><button data-a="tab" data-tab="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</span></div></button><button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf</b><span>${S.bed.filter(b => b.st === 'offen').length} zu besorgen</span></div></button><button data-a="tab" data-tab="mieten"><i>${IC.euro}</i><div><b>Mieten oder kaufen</b><span>${mietAlle().length} Mietanlässe erfasst</span></div></button></div>
+  return `<h1 class="titel">Mehr</h1><div class="aktionen"><button data-a="tab" data-tab="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</span></div></button><button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf</b><span>${S.bed.filter(b => b.st === 'offen').length} zu besorgen</span></div></button><button data-a="tab" data-tab="mieten"><i>${IC.euro}</i><div><b>Mieten oder kaufen</b><span>${mietAlle().length} Mietanlässe erfasst</span></div></button></div>
   <h2>Koffer und Sets</h2><div class="zeilen">${setsAlle().map(x => `<div class="zeile ohne"><div class="t"><b>${esc(x.n)}</b><span>${x.items.filter(i => BY[i]).length} Positionen · ein Code für alles</span></div><button class="kn" data-a="set" data-id="${x.id}">Öffnen</button></div>`).join('')}</div>
   <p><button class="kn" data-a="setNeu">${IC.koffer} Neues Set anlegen</button></p>
   <h2>Ich</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>${esc(S.me || 'Kein Name')}</b><span>Steht bei jeder Buchung und Meldung</span></div><button class="kn" data-a="name">Ändern</button></div></div>
@@ -354,8 +362,9 @@ function vMehr() {
 function zeichne() {
   const v = { heute: vHeute, bestand: vBestand, inventur: vInventur, einkauf: vEinkauf, mieten: vMieten, projekte: vProjekte, mehr: vMehr }[VIEW] || vHeute;
   $('#view').innerHTML = `<div class="view">${v()}</div>`;
-  $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === VIEW));
-  $('#ich').innerHTML = S.me ? `<b>${esc(S.me)}</b><i>${esc(S.me.trim()[0].toUpperCase())}</i>` : 'Wer bist du?';
+  const nav = ['inventur', 'einkauf', 'mieten'].includes(VIEW) ? 'mehr' : VIEW;
+  $$('#unten [data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === nav));
+  $('#ich').innerHTML = S.me ? `<i>${esc(S.me.trim()[0].toUpperCase())}</i>` : 'Wer bist du?';
   $$('[data-zahl]').forEach(el => { const z = +el.dataset.zahl; let n = 0; const st = Math.max(1, Math.ceil(z / 14)); const t = setInterval(() => { n = Math.min(z, n + st); el.textContent = n; if (n >= z) clearInterval(t); }, 28); });
 }
 function geh(v, still) { VIEW = v; if (!still) history.replaceState(null, '', '#/' + v); zeichne(); window.scrollTo(0, 0); }
@@ -375,7 +384,7 @@ function bGeraet(id) {
     ${offM.map(m => `<div class="hinweis ${m.art === 'fehlt' ? 'bad' : ''}"><p><b>${m.art === 'fehlt' ? 'Fehlt' : 'Defekt'}${m.q > 1 ? ' · ' + m.q + ' Stück' : ''}</b><br>${esc(m.note || 'ohne Beschreibung')}${m.foto && FOTO.get(m.foto) ? `<img src="${FOTO.get(m.foto)}" alt="Foto zur Meldung" style="margin-top:8px;border-radius:3px;max-height:160px">` : ''}</p><button class="kn" data-a="erl" data-id="${m.id}" data-v="${m.art === 'fehlt' ? 'gefunden' : 'repariert'}">${m.art === 'fehlt' ? 'Gefunden' : 'Repariert'}</button></div>`).join('')}
     <div class="vier">
       ${offO.some(o => o.von <= heute()) ? `<button class="kn haupt gross" data-a="imlager" data-id="${offO.find(o => o.von <= heute()).id}">${IC.rein} Zurück</button>` : `<button class="kn haupt gross" data-a="mit" data-id="${id}" ${i.frei ? '' : 'disabled style="opacity:.4"'}>${IC.raus} Mitnehmen</button>`}
-      ${i.z === 'neu' ? `<button class="kn gross" data-a="pruefOk" data-id="${id}">${IC.hak} Ist da</button>` : `<button class="kn gross" data-a="fotoG" data-id="${id}">${IC.foto} Foto</button>`}
+      ${i.z === 'neu' ? `<button class="kn gross" data-a="pruefOk" data-id="${id}">${IC.hak} Ist da</button>` : `<button class="kn gross" data-a="bearb" data-id="${id}">Bearbeiten</button>`}
       <button class="kn gross warn" data-a="melden" data-id="${id}" data-v="defekt">Defekt</button>
       <button class="kn gross bad" data-a="melden" data-id="${id}" data-v="fehlt">Fehlt</button>
     </div>
@@ -392,7 +401,7 @@ function bGeraet(id) {
     </div>
     <h2 style="font-size:18px;margin-top:22px">Verlauf</h2>
     ${hist.length ? `<ul class="verlauf">${hist.map(x => x.h).join('')}</ul>` : '<p class="leer">Noch auf keinem Projekt gewesen.</p>'}`,
-    `<button class="kn" data-a="bearb" data-id="${id}">Bearbeiten</button>${i.z === 'neu' ? `<button class="kn" data-a="fotoG" data-id="${id}">Foto</button>` : ''}`);
+    i.z === 'neu' ? `<button class="kn" data-a="bearb" data-id="${id}">Bearbeiten</button>` : '');
 }
 
 let CO = null;
@@ -867,6 +876,7 @@ Object.assign(A, {
     if (S.it[a.id]) delete S.it[a.id].arch; if (!S.neu.some(x => x.id === a.id)) S.neu.push({ ...a, z: 'ok', lc: heute() });
     S.inv.done[a.id] = Date.now(); log(a.id, 'ok', d.v === 'fehlt' ? 'wieder im Bestand, wird gesucht' : 'wieder im Bestand');
     save(); rechne(); if (d.v === 'fehlt') melde(a.id, 'fehlt', a.q, 'war ausgebucht, wird gesucht'); fertig(d.v === 'fehlt' ? 'Als fehlend eingetragen' : 'Wieder im Bestand'); },
+  alleAufgaben: () => blatt('Braucht dich', `<div class="zeilen">${aufgaben().map(a => `<div class="zeile breit"><button data-a="geraet" data-id="${a.i.id}" aria-label="${esc(a.i.n)}">${bild(a.i)}</button><div class="t"><span class="marke ${a.m[1]}">${a.m[0]}</span><b>${esc(a.i.n)}</b><span style="white-space:normal">${esc(a.t)}</span></div><div class="akt">${a.k.map((k, n) => `<button class="kn ${n ? 'leise' : ''}" data-a="${k[0]}" data-id="${k[2]}" data-v="${k[3] || ''}">${k[1]}</button>`).join('')}</div></div>`).join('')}</div>`),
   ivBericht: () => { const done = IT.filter(i => S.inv.done[i.id]).length; const L = (t, l) => l.length ? `\n${t}: ${l.join(', ')}` : '';
     teilen(`Mainfilm Inventar, Stand ${tag(heute())}: ${done} von ${IT.length} Positionen erfasst.` + L('Fehlt', IT.filter(i => i.fehlt).map(i => i.n)) + L('Defekt', IT.filter(i => i.def).map(i => i.n)) + L('Eingeschränkt', IT.filter(i => i.mangel).map(i => i.n + ' (' + i.mangel + ')')) + L('Neu', IT.filter(i => S.neu.some(n => n.id === i.id)).map(i => i.n)) + L('Kann weg', IT.filter(i => i.nutz === 'weg').map(i => i.n)) + L('Zu besorgen', S.bed.filter(b => b.st === 'offen').map(b => b.t))); },
   bedBest: d => { const b = S.bed.find(x => x.id === d.id); if (b) { b.st = 'bestellt'; b.ts = Date.now(); fertig('Als bestellt markiert'); } },
@@ -919,6 +929,7 @@ document.addEventListener('input', e => {
   else if (t.id === 'snQ') { SN.q = t.value; snZeichne(); }
   else if (t.id === 'neK') NE.auto = false;
 });
+document.addEventListener('change', e => { if (e.target.id === 'stSel') { F.st = e.target.value; zeichne(); } });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') zuBlatt();
   if (e.key === 'Enter' && e.target.id === 'q') { const c = befehl(F.q); if (c) A.befehl(); }
@@ -936,7 +947,7 @@ window.addEventListener('hashchange', weg);
 
 (async () => {
   await idbAuf(); await fotosLaden();
-  $('#unten').innerHTML = [['heute', 'Heute'], ['bestand', 'Bestand']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k]}${l}</button>`).join('') + `<button class="plus" data-a="plus" aria-label="Aktion">${IC.plus}</button>` + [['inventur', 'Inventur'], ['mehr', 'Mehr']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k === 'inventur' ? 'regal' : k]}${l}</button>`).join('');
+  $('#unten').innerHTML = [['heute', 'Start'], ['bestand', 'Geräte'], ['projekte', 'Projekte'], ['mehr', 'Mehr']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k]}${l}</button>`).join('');
   rechne(); weg();
   if (!S.me && !location.hash.startsWith('#/g/')) brauchtName(() => {});
 })();
