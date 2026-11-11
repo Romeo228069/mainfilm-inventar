@@ -264,3 +264,11 @@ label.feld input,label.feld select{min-width:0;max-width:100%}
 .katz .bahn{grid-column:1/-1}
 @media(max-width:560px){.zeile.breit2{grid-template-columns:minmax(0,1fr)}.zeile.breit2 .akt{justify-content:flex-start}.zeile.breit2 .t b{white-space:normal}}
 @media(max-width:1000px) and (min-width:821px){.tabs{gap:18px}}
+
+/* Scannen */
+.scan{position:relative;aspect-ratio:1;max-height:52dvh;margin:0 auto;background:#000;border-radius:6px;overflow:hidden}
+.scan video{width:100%;height:100%;object-fit:cover;display:block}
+.scan i{position:absolute;inset:16%;border:3px solid var(--mag);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.zahlen button:not([data-a]){cursor:default}
+
+.wahl button{text-align:center}

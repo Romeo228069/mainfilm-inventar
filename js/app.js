@@ -37,6 +37,9 @@ const IC = {
   plus: I('<path d="M12 5v14M5 12h14"/>'),
   lupe: I('<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/>'),
   hak: I('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  scan: I('<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16"/>'),
+  euro: I('<path d="M17.5 6.5A6.5 6.5 0 007 12a6.5 6.5 0 0010.5 5.5M4 10.5h9M4 13.5h9"/>'),
+  koffer: I('<rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M3 13h18"/>'),
   raus: I('<path d="M4 12h12M11 6l6 6-6 6M20 4v16"/>'),
   rein: I('<path d="M20 12H8M13 6l-6 6 6 6M4 4v16"/>'),
   warn: I('<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.3"/>'),
@@ -95,7 +98,7 @@ function patch(id, o) {
   if (n) Object.assign(n, o); else S.it[id] = { ...(S.it[id] || {}), ...o };
 }
 function log(itemId, art, txt, pr) { S.ev.push({ ts: Date.now(), wer: S.me, itemId, art, txt, pr: pr || '' }); if (S.ev.length > 3000) S.ev.splice(0, S.ev.length - 3000); }
-function fertig(msg) { save(); rechne(); zeichne(); if (msg) toast(msg, true); vibr(); }
+function fertig(msg) { save(); rechne(); zeichne(); if (msg) toast(msg, true); vibr(); if (!$('.schleier') && /^#\/(g|k)\//.test(location.hash)) history.replaceState(null, '', '#/' + VIEW); }
 
 /* ---------- Änderungen ---------- */
 function nimm(sel, pr, wer, von, bis) {
@@ -191,7 +194,6 @@ function passtDazu(sel, fr) {
   return Object.entries(punkte).filter(([id]) => !sel[id] && BY[id] && fr(BY[id]) > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id]) => BY[id]);
 }
 const VORLAGE = {
-  'Ready to Shoot': [/^sony fx3$/i, /cage für fx3/i, /xlr kit/i, /magic arm kurz/i, /ntg5/i, /smallrig v-mount platte/i, /v-mount akku 98 wh micro/i, /akku np-fz100/i, /d-tap auf sony dummy/i],
   Interview: [/fx3/i, /a7s/i, /sony 16-35/i, /canon 24-70/i, /metabones/i, /lav mic/i, /wireless pro/i, /mkh 8070/i, /boom pole/i, /tascam/i, /mdr-7506/i, /aputure 80c/i, /molus/i, /softbox 120/i, /c-stand lang/i, /sandsack/i, /akku np-fz100/i, /videostativ/i, /shinobi/i],
   Event: [/fx3/i, /a7s/i, /rs 4 pro/i, /sony 16-35/i, /canon 70-200/i, /metabones/i, /wireless go/i, /ntg5/i, /akku np-fz100/i, /variabel 82/i, /t2c/i],
   Social: [/iphone 16/i, /smartphone rig/i, /wireless go/i, /t2c/i, /insta360 x3/i],
@@ -230,11 +232,12 @@ function blatt(titel, leib, fuss) {
   return s;
 }
 function zuBlatt(sofort) {
+  scStop();
   if (sofort) { $$('.schleier').forEach(x => x.remove()); document.body.style.overflow = ''; return; }
   const s = $('.schleier:not([data-weg])'); if (!s) return;
   document.body.style.overflow = '';
   s.classList.remove('auf'); s.dataset.weg = '1'; setTimeout(() => s.remove(), 380);
-  if (location.hash.startsWith('#/g/')) history.replaceState(null, '', '#/' + VIEW);
+  if (/^#\/(g|k)\//.test(location.hash)) history.replaceState(null, '', '#/' + VIEW);
 }
 const leib = () => $('.schleier:not([data-weg]) .blatt-leib');
 function fotoWahl(cb) {
@@ -282,6 +285,7 @@ function vHeute() {
   <div class="aktionen" style="margin-top:18px">
     <button data-a="tab" data-tab="inventur"><i style="color:var(--mag-ink)">${IC.regal}</i><div><b>Bestandsaufnahme: ${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</b><span>Fragen je Gerät durchklicken, bis der Stand stimmt</span></div></button>
     <button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf: ${S.bed.filter(b => b.st === 'offen').length} zu besorgen, ${S.bed.filter(b => b.st === 'bestellt').length} bestellt</b><span>Bedarf sammeln, Bestellung abhaken, Neues einpflegen</span></div></button>
+    <button data-a="tab" data-tab="mieten"><i>${IC.euro}</i><div><b>Mieten oder kaufen: ${mietKat().filter(k => mietRechne(k).urteil === 'kaufen').length} Käufe lohnen sich</b><span>Was wir leihen, wie oft, und ab wann sich der Kauf rechnet</span></div></button>
   </div>
   <h2>Zu erledigen <small>${auf.length ? auf.length + ' offen' : ''}</small></h2>
   <div class="zeilen">${auf.length ? auf.slice(0, 12).map(a => `<div class="zeile breit"><button data-a="geraet" data-id="${a.i.id}" aria-label="${esc(a.i.n)}">${bild(a.i)}</button><div class="t"><span class="marke ${a.m[1]}">${a.m[0]}</span><b>${esc(a.i.n)}</b><span>${esc(a.t)}</span></div><div class="akt">${a.k.map((k, n) => `<button class="kn ${n ? 'leise' : ''}" data-a="${k[0]}" data-id="${k[2]}" data-v="${k[3] || ''}">${k[1]}</button>`).join('')}</div></div>`).join('') : '<p class="leer">Nichts offen. Alles da, wo es sein soll.</p>'}</div>
@@ -301,9 +305,10 @@ function evZeile(e) {
 }
 function projektZeile(p, ls) {
   const off = ls.filter(o => !o.zu), stk = ls.reduce((s, o) => s + o.q, 0);
-  const von = ls.map(o => o.von).sort()[0], wer = [...new Set(ls.map(o => o.wer).filter(Boolean))].join(', ');
+  const mi = S.miet.filter(m => m.pr && m.pr === p);
+  const von = [...ls.map(o => o.von), ...mi.map(m => m.d)].sort()[0], wer = [...new Set(ls.map(o => o.wer).filter(Boolean))].join(', ');
   const its = [...new Set(ls.map(o => o.itemId))].map(id => BY[id]).filter(Boolean);
-  return `<button class="projekt" data-a="projekt" data-v="${esc(p)}"><div class="projekt-kopf"><b>${esc(p || 'Ohne Angabe')}</b><span>${off.length ? `<span class="marke rent">${off.reduce((s, o) => s + o.q, 0)} ${off.every(o => o.von > heute()) ? 'geplant' : 'unterwegs'}</span>` : 'abgeschlossen'}</span></div><span class="notiz" style="display:block;margin-top:2px">${stk} Teile · ab ${tag(von)}${wer ? ' · ' + esc(wer) : ''}</span><div class="streifen">${its.slice(0, 5).map(i => bild(i)).join('')}${its.length > 5 ? `<div class="mehr">+${its.length - 5}</div>` : ''}</div></button>`;
+  return `<button class="projekt" data-a="projekt" data-v="${esc(p)}"><div class="projekt-kopf"><b>${esc(p || 'Ohne Angabe')}</b><span>${off.length ? `<span class="marke rent">${off.reduce((s, o) => s + o.q, 0)} ${off.every(o => o.von > heute()) ? 'geplant' : 'unterwegs'}</span>` : ls.length ? 'abgeschlossen' : 'nur Miete'}</span></div><span class="notiz" style="display:block;margin-top:2px">${stk} Teile${mi.length ? ' · ' + mi.length + ' gemietet' : ''} · ab ${tag(von)}${wer ? ' · ' + esc(wer) : ''}</span><div class="streifen">${its.slice(0, 5).map(i => bild(i)).join('')}${its.length > 5 ? `<div class="mehr">+${its.length - 5}</div>` : ''}</div></button>`;
 }
 function vBestand() {
   let l = IT;
@@ -325,12 +330,15 @@ function raster(l) {
 }
 function vProjekte() {
   const prs = {}; for (const o of S.out) if (BY[o.itemId]) (prs[o.pr] = prs[o.pr] || []).push(o);
+  for (const m of S.miet) if (m.pr && !prs[m.pr]) prs[m.pr] = [];
   const l = Object.entries(prs).sort((a, b) => (b[1].some(o => !o.zu) - a[1].some(o => !o.zu)) || (b[1].map(o => o.von).sort().pop() || '').localeCompare(a[1].map(o => o.von).sort().pop() || ''));
-  return `<h2>Projekte <small>welches Gerät war wo</small></h2>${l.length ? l.map(([p, ls]) => projektZeile(p, ls)).join('') : '<p class="leer">Noch kein Projekt. Sobald jemand Geräte mitnimmt, steht hier, was wann wo war.</p>'}
+  return `<h2>Projekte <small>eigenes und gemietetes Material</small></h2>${l.length ? l.map(([p, ls]) => projektZeile(p, ls)).join('') : '<p class="leer">Noch kein Projekt. Sobald jemand Geräte mitnimmt, steht hier, was wann wo war.</p>'}
   <p style="margin-top:20px"><button class="kn haupt gross" data-a="mit">${IC.raus} Geräte mitnehmen</button></p>`;
 }
 function vMehr() {
-  return `<div class="aktionen"><button data-a="tab" data-tab="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</span></div></button><button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf</b><span>${S.bed.filter(b => b.st === 'offen').length} zu besorgen</span></div></button></div>
+  return `<div class="aktionen"><button data-a="tab" data-tab="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</span></div></button><button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf</b><span>${S.bed.filter(b => b.st === 'offen').length} zu besorgen</span></div></button><button data-a="tab" data-tab="mieten"><i>${IC.euro}</i><div><b>Mieten oder kaufen</b><span>${mietAlle().length} Mietanlässe erfasst</span></div></button></div>
+  <h2>Koffer und Sets</h2><div class="zeilen">${setsAlle().map(x => `<div class="zeile ohne"><div class="t"><b>${esc(x.n)}</b><span>${x.items.filter(i => BY[i]).length} Positionen · ein Code für alles</span></div><button class="kn" data-a="set" data-id="${x.id}">Öffnen</button></div>`).join('')}</div>
+  <p><button class="kn" data-a="setNeu">${IC.koffer} Neues Set anlegen</button></p>
   <h2>Ich</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>${esc(S.me || 'Kein Name')}</b><span>Steht bei jeder Buchung und Meldung</span></div><button class="kn" data-a="name">Ändern</button></div></div>
   <h2>Projekte</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>Welches Gerät war wo</b><span>Alle Projekte mit ihren Geräten</span></div><button class="kn" data-a="tab" data-tab="projekte">Öffnen</button></div></div>
   <h2>Etiketten</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>QR-Etiketten drucken</b><span>Telefonkamera draufhalten, das Gerät öffnet sich hier</span></div><button class="kn" data-a="etiketten">Drucken</button></div></div>
@@ -344,7 +352,7 @@ function vMehr() {
   <p class="notiz">Grundbestand aus Notion, Stand ${tag(SEED.stand)}. ${SEED.items.length} Positionen. Preise und Versicherungswerte stehen bewusst nicht auf dieser öffentlichen Seite, sie bleiben in Notion.</p>`;
 }
 function zeichne() {
-  const v = { heute: vHeute, bestand: vBestand, inventur: vInventur, einkauf: vEinkauf, projekte: vProjekte, mehr: vMehr }[VIEW] || vHeute;
+  const v = { heute: vHeute, bestand: vBestand, inventur: vInventur, einkauf: vEinkauf, mieten: vMieten, projekte: vProjekte, mehr: vMehr }[VIEW] || vHeute;
   $('#view').innerHTML = `<div class="view">${v()}</div>`;
   $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === VIEW));
   $('#ich').innerHTML = S.me ? `<b>${esc(S.me)}</b><i>${esc(S.me.trim()[0].toUpperCase())}</i>` : 'Wer bist du?';
@@ -366,7 +374,7 @@ function bGeraet(id) {
     ${offO.map(o => `<div class="hinweis rent"><p><b>${o.von > heute() ? 'Geplant: ' : ''}${esc(o.pr || 'Unterwegs ohne Projektangabe')}</b><br>${o.q > 1 ? o.q + ' Stück · ' : ''}${o.von > heute() ? 'ab' : 'seit'} ${tag(o.von)}${o.bis ? ' · zurück bis ' + tag(o.bis) : ''}${o.wer ? ' · ' + esc(o.wer) : ''}</p><button class="kn" data-a="${o.von > heute() ? 'absagen' : 'imlager'}" data-id="${o.id}">${o.von > heute() ? 'Absagen' : 'Zurück'}</button></div>`).join('')}
     ${offM.map(m => `<div class="hinweis ${m.art === 'fehlt' ? 'bad' : ''}"><p><b>${m.art === 'fehlt' ? 'Fehlt' : 'Defekt'}${m.q > 1 ? ' · ' + m.q + ' Stück' : ''}</b><br>${esc(m.note || 'ohne Beschreibung')}${m.foto && FOTO.get(m.foto) ? `<img src="${FOTO.get(m.foto)}" alt="Foto zur Meldung" style="margin-top:8px;border-radius:3px;max-height:160px">` : ''}</p><button class="kn" data-a="erl" data-id="${m.id}" data-v="${m.art === 'fehlt' ? 'gefunden' : 'repariert'}">${m.art === 'fehlt' ? 'Gefunden' : 'Repariert'}</button></div>`).join('')}
     <div class="vier">
-      <button class="kn haupt gross" data-a="mit" data-id="${id}" ${i.frei ? '' : 'disabled style="opacity:.4"'}>${IC.raus} Mitnehmen</button>
+      ${offO.some(o => o.von <= heute()) ? `<button class="kn haupt gross" data-a="imlager" data-id="${offO.find(o => o.von <= heute()).id}">${IC.rein} Zurück</button>` : `<button class="kn haupt gross" data-a="mit" data-id="${id}" ${i.frei ? '' : 'disabled style="opacity:.4"'}>${IC.raus} Mitnehmen</button>`}
       ${i.z === 'neu' ? `<button class="kn gross" data-a="pruefOk" data-id="${id}">${IC.hak} Ist da</button>` : `<button class="kn gross" data-a="fotoG" data-id="${id}">${IC.foto} Foto</button>`}
       <button class="kn gross warn" data-a="melden" data-id="${id}" data-v="defekt">Defekt</button>
       <button class="kn gross bad" data-a="melden" data-id="${id}" data-v="fehlt">Fehlt</button>
@@ -388,15 +396,17 @@ function bGeraet(id) {
 }
 
 let CO = null;
-function bMit(vorId, pr) {
-  if (!brauchtName(() => bMit(vorId, pr))) return;
-  CO = { pr: pr || '', von: heute(), bis: '', sel: {}, q: '' };
+function bMit(vorId, pr, behalten) {
+  if (!brauchtName(() => bMit(vorId, pr, behalten))) return;
+  if (!behalten || !CO) CO = { pr: pr || '', von: heute(), bis: '', sel: {}, q: '' };
+  CO.q = '';
   if (vorId && BY[vorId] && BY[vorId].frei) CO.sel[vorId] = 1;
   const alte = [...new Set(S.out.map(o => o.pr).filter(Boolean))].reverse();
   blatt('Mitnehmen', `<datalist id="prs">${alte.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
     <label class="feld">Projekt<input id="coPr" list="prs" placeholder="z. B. DB ICON Folge 4" value="${esc(CO.pr)}" autocomplete="off"></label>
-    <div class="zwei-sp"><label class="feld">Ab<input id="coVon" type="date" min="${heute()}" value="${heute()}"></label><label class="feld">Zurück am<input id="coBis" type="date" min="${heute()}"></label></div>
-    <p class="tipp" style="margin-top:14px">Vorschlag für</p><div class="dazu">${Object.keys(VORLAGE).map(v => `<button data-a="coVorlage" data-v="${v}" style="padding:0 14px">${v}</button>`).join('')}</div>
+    <div class="zwei-sp"><label class="feld">Ab<input id="coVon" type="date" min="${heute()}" value="${CO.von}"></label><label class="feld">Zurück am<input id="coBis" type="date" min="${heute()}" value="${CO.bis}"></label></div>
+    <p class="tipp" style="margin-top:14px">Vorschlag für</p><div class="dazu">${setsAlle().map(x => `<button data-a="coSet" data-id="${x.id}" style="padding:0 14px">${esc(x.n)}</button>`).join('')}${Object.keys(VORLAGE).map(v => `<button data-a="coVorlage" data-v="${v}" style="padding:0 14px">${v}</button>`).join('')}</div>
+    <p style="margin:12px 0 0"><button class="kn voll" data-a="coScan">${IC.scan} Codes scannen</button></p>
     <div id="coDazu"></div>
     <div class="suche" style="margin-top:14px">${IC.lupe}<input id="coQ" type="search" placeholder="Gerät suchen" autocomplete="off" aria-label="Gerät suchen"></div>
     <div id="coListe"></div>`,
@@ -419,8 +429,10 @@ function coZeichne() {
 function bProjekt(p) {
   const ls = S.out.filter(o => o.pr === p && BY[o.itemId]), off = ls.filter(o => !o.zu);
   RU = {}; off.forEach(o => RU[o.id] = 'da');
-  blatt(p || 'Ohne Angabe', `${off.length ? `<h2 style="font-size:18px">Zurückgeben <small>${off.length} offen</small></h2>${off.map(o => { const i = BY[o.itemId]; return `<div class="pick" style="grid-template-columns:44px minmax(0,1fr)">${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${o.q > 1 ? o.q + ' Stück · ' : ''}seit ${tag(o.von)}${o.bis ? ' · bis ' + tag(o.bis) : ''}${o.wer ? ' · ' + esc(o.wer) : ''}</small></div><div class="wahl" style="grid-column:1/-1;margin-top:0">${[['da', 'Zurück'], ['defekt', 'Defekt'], ['fehlt', 'Fehlt'], ['bleibt', 'Bleibt']].map(([k, lb]) => `<button data-a="ru" data-id="${o.id}" data-v="${k}" aria-pressed="${k === 'da'}">${lb}</button>`).join('')}</div></div>`; }).join('')}` : ''}
-    ${ls.some(o => o.zu) ? `<h2 style="font-size:18px;margin-top:24px">War dabei</h2>${ls.filter(o => o.zu).map(o => { const i = BY[o.itemId]; return `<button class="pick" style="grid-template-columns:44px minmax(0,1fr)" data-a="geraet" data-id="${i.id}">${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${o.q > 1 ? o.q + ' Stück · ' : ''}${tag(o.von)} bis ${tag(new Date(o.zu).toISOString())}${o.wer ? ' · ' + esc(o.wer) : ''}</small></div></button>`; }).join('')}` : ''}`,
+  const mi = S.miet.filter(m => m.pr && m.pr === p);
+  blatt(p || 'Ohne Angabe', `${off.length ? `<p style="margin:0 0 12px"><button class="kn voll" data-a="ruScan" data-v="${esc(p)}">${IC.scan} Rückgabe scannen</button></p><h2 style="font-size:18px">Zurückgeben <small>${off.length} offen</small></h2>${off.map(o => { const i = BY[o.itemId]; return `<div class="pick" style="grid-template-columns:44px minmax(0,1fr)">${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${o.q > 1 ? o.q + ' Stück · ' : ''}seit ${tag(o.von)}${o.bis ? ' · bis ' + tag(o.bis) : ''}${o.wer ? ' · ' + esc(o.wer) : ''}</small></div><div class="wahl" style="grid-column:1/-1;margin-top:0">${[['da', 'Zurück'], ['defekt', 'Defekt'], ['fehlt', 'Fehlt'], ['bleibt', 'Bleibt']].map(([k, lb]) => `<button data-a="ru" data-id="${o.id}" data-v="${k}" aria-pressed="${k === 'da'}">${lb}</button>`).join('')}</div></div>`; }).join('')}` : ''}
+    ${ls.some(o => o.zu) ? `<h2 style="font-size:18px;margin-top:24px">War dabei</h2>${ls.filter(o => o.zu).map(o => { const i = BY[o.itemId]; return `<button class="pick" style="grid-template-columns:44px minmax(0,1fr)" data-a="geraet" data-id="${i.id}">${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${o.q > 1 ? o.q + ' Stück · ' : ''}${tag(o.von)} bis ${tag(new Date(o.zu).toISOString())}${o.wer ? ' · ' + esc(o.wer) : ''}</small></div></button>`; }).join('')}` : ''}
+    ${p ? `<h2 style="font-size:18px;margin-top:24px">Gemietet <small>${mi.length ? mi.length + ' · ' + eur(mi.reduce((s, m) => s + mietPreis(m), 0)) : ''}</small></h2>${mi.map(m => { const k = mietKat().find(x => x.id === m.g) || {}; return `<div class="pick" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><b>${esc(k.n || 'Gerät')}</b><small>${tag(m.d)} · ${m.t} ${m.t === 1 ? 'Tag' : 'Tage'}${m.v ? ' · ' + esc(m.v) : ''}</small></div><span class="num" style="font-size:14px">${eur(mietPreis(m))}</span></div>`; }).join('') || '<p class="leer" style="padding:6px 0">Nichts gemietet eingetragen.</p>'}<p style="margin-top:10px"><button class="kn" data-a="mietNeu" data-v="${esc(p)}">${IC.euro} Miete eintragen</button></p>` : ''}`,
     off.length ? `<button class="kn" data-a="mit" data-v="${esc(p)}">Mehr mitnehmen</button><button class="kn haupt gross" data-a="ruOk" data-v="${esc(p)}">Buchen</button>` : `<button class="kn haupt" data-a="mit" data-v="${esc(p)}">Wieder mitnehmen</button>`);
 }
 let RU = {};
@@ -497,10 +509,12 @@ function brauchtName(dann) {
 let NACH = null;
 function bAktion() {
   blatt('Was möchtest du tun?', `<div class="aktionen">
+    <button data-a="scan"><i style="color:var(--mag-ink)">${IC.scan}</i><div><b>Scannen</b><span>Code am Gerät oder Koffer mit der Kamera lesen</span></div></button>
     <button data-a="mit"><i>${IC.raus}</i><div><b>Mitnehmen</b><span>Geräte auf ein Projekt buchen</span></div></button>
     <button data-a="zurueckWahl"><i>${IC.rein}</i><div><b>Zurückbringen</b><span>Nach dem Dreh alles abhaken</span></div></button>
     <button data-a="melden" data-v="defekt"><i style="color:var(--warn)">${IC.warn}</i><div><b>Defekt melden</b><span>Mit Foto und kurzer Beschreibung</span></div></button>
     <button data-a="melden" data-v="fehlt"><i style="color:var(--bad)">${IC.frage}</i><div><b>Fehlt melden</b><span>Etwas ist nicht da, wo es sein soll</span></div></button>
+    <button data-a="mietNeu"><i>${IC.euro}</i><div><b>Miete eintragen</b><span>Was wir geliehen haben, für welches Projekt</span></div></button>
     <button data-a="neu"><i>${IC.neu}</i><div><b>Neues Gerät</b><span>Name, Foto, fertig</span></div></button>
     <button data-a="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>Gerät für Gerät durchfragen</span></div></button>
   </div>`);
@@ -625,6 +639,109 @@ function vEinkauf() {
   ${da.length ? `<h2>Angekommen</h2><div class="zeilen">${da.map(b => z(b, b.inv ? [] : [['bedInv', 'Ins Inventar']])).join('')}</div>` : ''}`;
 }
 
+
+/* ---------- Mieten: was wir leihen, wie oft, und ob sich Kaufen lohnt ---------- */
+if (!S.miet) S.miet = []; if (!S.mk) S.mk = []; if (!S.mkp) S.mkp = {}; if (!S.sets) S.sets = [];
+const mietKat = () => [...(SEED.mietkat || []), ...S.mk].map(k => ({ ...k, ...(S.mkp[k.id] || {}) }));
+const mietAlle = () => [...(SEED.miet || []), ...S.miet];
+const mietPreis = m => m.preis || (m.t || 1) * ((mietKat().find(k => k.id === m.g) || {}).miete || 0);
+const eur = n => Math.round(n).toLocaleString('de-DE') + ' €';
+let MH = 24;
+const URT = { kaufen: ['Kaufen lohnt', 'ok'], pruefen: ['Prüfen', 'warn'], mieten: ['Weiter mieten', 'gap'], fehlt: ['Preis fehlt', 'gap'] };
+const ST_M = { sicher: 'belegt', angebot: 'Angebot', geplant: 'geplant', ueberlegt: 'überlegt' };
+function mietRechne(k) {
+  const v = new Date(); v.setFullYear(v.getFullYear() - 1); const ab = v.toISOString().slice(0, 10), h = heute();
+  const al = mietAlle().filter(a => a.g === k.id).sort((a, b) => b.d.localeCompare(a.d));
+  const j = al.filter(a => a.d >= ab && a.d <= h), sich = j.filter(a => a.st === 'sicher'), off = j.filter(a => a.st !== 'sicher');
+  const tS = sich.reduce((s, a) => s + (a.t || 1), 0), tO = off.reduce((s, a) => s + (a.t || 1), 0);
+  const kosten = sich.reduce((s, a) => s + (a.preis || (a.t || 1) * (k.miete || 0)), 0);
+  const be = k.kauf && k.miete ? Math.ceil(k.kauf / k.miete) : null;
+  const urteil = !be ? 'fehlt' : tS * MH / 12 >= be ? 'kaufen' : (tS + tO) * MH / 12 >= be ? 'pruefen' : 'mieten';
+  return { al, j, tS, tO, kosten, be, urteil, n: sich.length, nO: off.length };
+}
+function vMieten() {
+  const R = ['kaufen', 'pruefen', 'mieten', 'fehlt'];
+  const l = mietKat().map(k => ({ k, r: mietRechne(k) })).sort((a, b) => R.indexOf(a.r.urteil) - R.indexOf(b.r.urteil) || (b.r.tS + b.r.tO) - (a.r.tS + a.r.tO));
+  const ges = l.reduce((s, x) => s + x.r.kosten, 0);
+  return `<h2>Mieten oder kaufen <small>letzte 12 Monate</small></h2>
+  <div class="zahlen" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+    <button><b class="num" data-zahl="${l.filter(x => x.r.urteil === 'kaufen').length}">0</b><span><i class="pkt ok"></i>Kaufen lohnt</span></button>
+    <button><b class="num" data-zahl="${l.filter(x => x.r.urteil === 'pruefen').length}">0</b><span><i class="pkt warn"></i>Prüfen</span></button>
+    <button><b class="num" style="font-size:clamp(22px,5.4vw,44px);line-height:1.25">${eur(ges)}</b><span>belegte Mietkosten</span></button>
+  </div>
+  <p style="margin:16px 0 4px"><button class="kn haupt gross voll" data-a="mietNeu">${IC.euro} Miete eintragen</button></p>
+  <div class="filter"><span style="align-self:center;font-size:13px;color:var(--mute)">Kauf soll bezahlt sein nach</span>${[12, 24, 36].map(m => `<button data-a="mietH" data-v="${m}" aria-pressed="${MH === m}">${m} Monaten</button>`).join('')}</div>
+  <div class="zeilen">${l.map(({ k, r }) => `<button class="zeile ohne" data-a="mietG" data-id="${k.id}"><div class="t"><span class="marke ${URT[r.urteil][1]}">${URT[r.urteil][0]}</span><b>${esc(k.n)}</b><span>${r.n + r.nO ? `${r.n + r.nO}× gemietet · ${r.tS} belegte${r.tO ? ' + ' + r.tO + ' offene' : ''} Tage` : 'in den letzten 12 Monaten nicht gemietet'}</span></div><span class="num" style="text-align:right;font-size:13px;color:var(--mute);white-space:nowrap">${r.kosten ? eur(r.kosten) + '<br>' : ''}${k.kauf ? 'Kauf ' + eur(k.kauf) : ''}</span></button>`).join('')}</div>
+  <p class="notiz">Rechenweg: Kaufpreis geteilt durch Mietpreis pro Tag ergibt die Miettage, nach denen der Kauf bezahlt ist. „Kaufen lohnt“ heißt, die belegten Miettage reichen dafür im gewählten Zeitraum. „Prüfen“ heißt, es reicht nur, wenn auch die offenen Anlässe (Angebot, geplant, überlegt) stattgefunden haben. Preise netto, Wartung und Wiederverkauf nicht eingerechnet. Startwerte aus der Auswertung vom 10.11.2026, ohne Projektnamen, weil diese Seite öffentlich ist.</p>`;
+}
+function bMietG(id) {
+  const k = mietKat().find(x => x.id === id); if (!k) return; const r = mietRechne(k);
+  const satz = r.be ? `Der Kauf (${eur(k.kauf)}) ist nach <b>${r.be} Miettagen</b> bezahlt. Bei gleichem Tempo kommt ihr in ${MH} Monaten auf ${Math.round(r.tS * MH / 12)} belegte${r.tO ? ' und ' + Math.round(r.tO * MH / 12) + ' offene' : ''} Miettage.` : 'Für eine Empfehlung fehlt der Mietpreis pro Tag oder der Kaufpreis.';
+  blatt(k.n, `<div class="hinweis ${r.urteil === 'kaufen' ? '' : 'rent'}" style="${r.urteil === 'kaufen' ? 'background:var(--ok-soft)' : ''}"><p><b>${URT[r.urteil][0]}</b><br>${satz}</p></div>
+    ${k.bestand ? `<p class="notiz" style="margin-top:0">Im Bestand: ${esc(k.bestand)}</p>` : ''}
+    <div class="zwei-sp"><label class="feld">Miete pro Tag (€)<input id="mgM" type="number" inputmode="decimal" value="${k.miete || ''}"></label><label class="feld">Kaufpreis netto (€)<input id="mgK" type="number" inputmode="decimal" value="${k.kauf || ''}"></label></div>
+    <p style="margin:10px 0 0"><button class="kn" data-a="mietPreise" data-id="${id}">Preise speichern</button></p>
+    <h2 style="font-size:18px;margin-top:22px">Mietanlässe <small>${r.al.length}</small></h2>
+    ${r.al.map(a => `<div class="pick" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><b>${tag(a.d)}${a.pr ? ' · ' + esc(a.pr) : ''}</b><small>${a.t || 1} ${(a.t || 1) === 1 ? 'Tag' : 'Tage'}${a.v ? ' · ' + esc(a.v) : ''} · ${ST_M[a.st] || a.st}</small></div><span class="num" style="font-size:14px">${a.preis || k.miete ? eur(a.preis || (a.t || 1) * k.miete) : ''}${String(a.id).startsWith('s-') ? '' : ` <button class="kn leise" style="min-height:36px;padding:0 10px" data-a="mietWeg" data-id="${a.id}" aria-label="Eintrag löschen">✕</button>`}</span></div>`).join('') || '<p class="leer">Noch kein Anlass eingetragen.</p>'}`,
+    `<button class="kn haupt gross" data-a="mietNeu" data-id="${id}">${IC.euro} Miete eintragen</button>`);
+}
+function bMietNeu(gid, pr) {
+  if (!brauchtName(() => bMietNeu(gid, pr))) return;
+  const k = gid ? mietKat().find(x => x.id === gid) : null;
+  const prs = [...new Set([...S.out.map(o => o.pr), ...S.miet.map(m => m.pr)].filter(Boolean))].reverse();
+  blatt('Miete eintragen', `<datalist id="mkl">${mietKat().map(x => `<option value="${esc(x.n)}">`).join('')}</datalist><datalist id="prs">${prs.map(p => `<option value="${esc(p)}">`).join('')}</datalist><datalist id="vll">${[...new Set(['Calumet', '711rent', 'LiveFRAME', 'monkey rent', ...mietAlle().map(a => a.v)].filter(Boolean))].map(v => `<option value="${esc(v)}">`).join('')}</datalist>
+    <label class="feld">Was wurde gemietet?<input id="mnG" list="mkl" value="${esc(k ? k.n : '')}" placeholder="z. B. Sony 24-70 GM II" autocomplete="off"></label>
+    <label class="feld">Für welches Projekt?<input id="mnP" list="prs" value="${esc(pr || '')}" autocomplete="off"></label>
+    <div class="zwei-sp"><label class="feld">Datum<input id="mnD" type="date" value="${heute()}"></label><label class="feld">Miettage<input id="mnT" type="number" inputmode="numeric" min="1" value="1"></label></div>
+    <div class="zwei-sp"><label class="feld">Preis gesamt (€)<input id="mnE" type="number" inputmode="decimal" placeholder="${k && k.miete ? 'sonst ' + k.miete + ' pro Tag' : 'wenn bekannt'}"></label><label class="feld">Verleiher<input id="mnV" list="vll" autocomplete="off"></label></div>`,
+    `<button class="kn haupt gross" data-a="mietOk">Eintragen</button>`);
+}
+
+/* ---------- Koffer und Sets ---------- */
+const setsAlle = () => [...(SEED.sets || []), ...S.sets];
+function bSet(id) {
+  const x = setsAlle().find(k => k.id === id); if (!x) return toast('Dieses Set gibt es nicht');
+  history.replaceState(null, '', '#/k/' + id);
+  const its = x.items.map(i => BY[i]).filter(Boolean), unterwegs = S.out.filter(o => !o.zu && o.von <= heute() && x.items.includes(o.itemId));
+  blatt(x.n, `<p class="tipp" style="margin:0 0 8px">${its.length} Positionen · ${its.filter(i => i.frei > 0).length} frei${unterwegs.length ? ' · ' + unterwegs.length + ' unterwegs' : ''}</p>
+    ${its.map(i => `<button class="pick" style="grid-template-columns:44px minmax(0,1fr)" data-a="geraet" data-id="${i.id}">${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small style="display:flex;align-items:center;gap:6px">${standZeile(i)}${i.mangel ? ' · <span style="color:var(--warn)">' + esc(i.mangel) + '</span>' : ''}</small></div></button>`).join('') || '<p class="leer">Dieses Set ist leer.</p>'}
+    ${String(id).startsWith('k') && S.sets.some(k => k.id === id) ? `<p class="notiz"><button class="kn bad leise" data-a="setWeg" data-id="${id}">Set auflösen</button></p>` : ''}`,
+    `${unterwegs.length ? `<button class="kn" data-a="setZurueck" data-id="${id}">Alles zurück</button>` : ''}<button class="kn haupt gross" data-a="setMit" data-id="${id}">${IC.raus} Alles mitnehmen</button>`);
+}
+let SN = null;
+function bSetNeu() {
+  SN = { sel: {}, q: '' };
+  blatt('Neues Set', `<label class="feld" style="margin-top:0">Name<input id="snN" placeholder="z. B. Lichtkoffer 1" autocomplete="off"></label><div class="suche" style="margin-top:12px">${IC.lupe}<input id="snQ" type="search" placeholder="Gerät suchen" autocomplete="off" aria-label="Gerät suchen"></div><div id="snL"></div>`, `<button class="kn haupt gross" data-a="snOk" id="snOk">Set anlegen</button>`);
+  snZeichne();
+}
+function snZeichne() {
+  const l = leib(); if (!l || !SN) return;
+  const liste = (SN.q ? suche(SN.q, IT) : [...IT].sort((a, b) => (!!SN.sel[b.id] - !!SN.sel[a.id]) || Object.keys(KAT).indexOf(a.k) - Object.keys(KAT).indexOf(b.k) || a.n.localeCompare(b.n))).slice(0, 80);
+  $('#snL', l).innerHTML = liste.map(i => `<button class="pick" data-a="snPick" data-id="${i.id}" aria-pressed="${!!SN.sel[i.id]}">${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${KAT[i.k]}</small></div><span class="hak">${IC.hak}</span></button>`).join('');
+  $('#snOk').textContent = Object.keys(SN.sel).length ? `Set mit ${Object.keys(SN.sel).length} Positionen anlegen` : 'Geräte antippen';
+}
+
+/* ---------- Scannen ---------- */
+let SC = null;
+function scStop() { if (!SC) return; clearTimeout(SC.tm); try { SC.st && SC.st.getTracks().forEach(t => t.stop()); } catch (e) {} SC = null; }
+function scLies(txt) { const m = /#\/(g|k)\/([^?#\s]+)/.exec(txt || ''); return m ? { art: m[1], id: decodeURIComponent(m[2]) } : null; }
+function scTreffer(txt) { if (!SC) return; const now = Date.now(); if (txt === SC.last && now - SC.lt < 2500) return; SC.last = txt; SC.lt = now; const t = scLies(txt); if (!t) return toast('Das ist kein Inventar-Code'); vibr(30); SC.cb(t); }
+function scZeile(txt, ok) { const l = $('#scL'); if (l) l.insertAdjacentHTML('afterbegin', `<div class="pick" style="grid-template-columns:28px minmax(0,1fr)"><span class="hak" style="${ok ? 'background:var(--mag);box-shadow:none' : ''}">${ok ? IC.hak.replace('<svg', '<svg style="opacity:1;color:var(--on-mag)"') : ''}</span><b style="white-space:normal">${esc(txt)}</b></div>`); }
+function scIds(t) { return t.art === 'k' ? ((setsAlle().find(x => x.id === t.id) || {}).items || []) : [t.id]; }
+function bScan(titel, hinweis, cb, ende) {
+  blatt(titel, `<div class="scan"><video id="scV" playsinline muted autoplay></video><i></i></div><p class="tipp" id="scT" style="text-align:center">${esc(hinweis)}</p><div id="scL"></div>`, `<button class="kn haupt gross" data-a="scEnde">Fertig</button>`);
+  SC = { cb, ende, last: '', lt: 0, st: null, tm: 0 };
+  const v = $('#scV'), c = document.createElement('canvas'), x = c.getContext('2d', { willReadFrequently: true });
+  const tick = () => { if (!SC) return;
+    if (v.readyState >= 2 && v.videoWidth) { const f = Math.min(1, 640 / v.videoWidth); c.width = v.videoWidth * f | 0; c.height = v.videoHeight * f | 0; x.drawImage(v, 0, 0, c.width, c.height);
+      let r = null; try { r = jsQR(x.getImageData(0, 0, c.width, c.height).data, c.width, c.height, { inversionAttempts: 'dontInvert' }); } catch (e) {}
+      if (r && r.data) scTreffer(r.data); }
+    if (SC) SC.tm = setTimeout(tick, 160); };
+  const aus = t => { const e = $('#scT'); if (e) e.textContent = t; };
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return aus('Dieser Browser gibt die Kamera nicht frei.');
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false }).then(st => { if (!SC) return st.getTracks().forEach(t => t.stop()); SC.st = st; v.srcObject = st; const pl = v.play(); pl && pl.catch(() => {}); tick(); }).catch(() => aus('Kein Kamerazugriff. Bitte in den Browser-Einstellungen für diese Seite erlauben.'));
+}
+
 /* ---------- Handlungen ---------- */
 const A = {
   zu: () => zuBlatt(), schleier: (d, el, e) => { if (e.target === el) zuBlatt(); },
@@ -703,7 +820,7 @@ const A = {
   csv: () => datei('mainfilm-bestand-' + heute() + '.csv', '﻿' + ['Name;Kategorie;Menge;Zustand;Frei;Modell;Seriennummer;Zuletzt geprüft', ...IT.map(i => [i.n, KAT[i.k], i.q, ST[i.st][0], i.frei, i.m || '', i.sn || '', i.lc || ''].map(x => '"' + String(x).replace(/"/g, '""') + '"').join(';'))].join('\n'), 'text/csv'),
   reset: () => { if (!confirm('Alles löschen, was auf diesem Gerät eingetragen wurde? Der Grundbestand bleibt.')) return; localStorage.removeItem(KEY); if (idb) idb.transaction('fotos', 'readwrite').objectStore('fotos').clear(); location.hash = ''; location.reload(); },
   etiketten: () => { const base = location.origin + location.pathname + '#/g/'; let e = $('.etiketten'); if (!e) { e = document.createElement('div'); e.className = 'etiketten'; document.body.appendChild(e); }
-    e.innerHTML = IT.map(i => { const q = qrcode(0, 'M'); q.addData(base + i.id); q.make(); return `<div class="etikett">${q.createSvgTag({ cellSize: 2, margin: 0, scalable: true })}<div>${esc(i.n)}<small>${KAT[i.k]}${i.sn ? ' · ' + esc(i.sn) : ''}</small><small>Mainfilm</small></div></div>`; }).join('');
+    e.innerHTML = setsAlle().map(x => { const q = qrcode(0, 'M'); q.addData(location.origin + location.pathname + '#/k/' + x.id); q.make(); return `<div class="etikett">${q.createSvgTag({ cellSize: 2, margin: 0, scalable: true })}<div>${esc(x.n)}<small>Set · ${x.items.length} Positionen</small><small>Mainfilm</small></div></div>`; }).join('') + IT.map(i => { const q = qrcode(0, 'M'); q.addData(base + i.id); q.make(); return `<div class="etikett">${q.createSvgTag({ cellSize: 2, margin: 0, scalable: true })}<div>${esc(i.n)}<small>${KAT[i.k]}${i.sn ? ' · ' + esc(i.sn) : ''}</small><small>Mainfilm</small></div></div>`; }).join('');
     setTimeout(() => window.print(), 80); },
 };
 
@@ -742,7 +859,7 @@ Object.assign(A, {
   ivNeu: d => { bNeu(''); NACH_NEU = d.v; NE.k = d.v; NE.auto = false; $('#neK').value = d.v; },
   ivReset: () => { if (!confirm('Fortschritt der Bestandsaufnahme zurücksetzen? Antworten und Zustände bleiben erhalten.')) return; S.inv = { start: '', done: {} }; fertig('Neue Runde'); },
   ivSenden: () => { const eig = x => !/^(s-|k-)/.test(String(x.id));
-    const d = { v: 1, wer: S.me, am: heute(), it: S.it, neu: S.neu, mel: S.mel.filter(m => eig(m) || m.zu), out: S.out.filter(o => eig(o) || o.zu), bed: S.bed.filter(b => eig(b) || b.st !== (SEED.bed.find(x => x.id === b.id) || {}).st), erfasst: Object.keys(S.inv.done) };
+    const d = { v: 1, wer: S.me, am: heute(), it: S.it, neu: S.neu, mel: S.mel.filter(m => eig(m) || m.zu), out: S.out.filter(o => eig(o) || o.zu), bed: S.bed.filter(b => eig(b) || b.st !== (SEED.bed.find(x => x.id === b.id) || {}).st), erfasst: Object.keys(S.inv.done), miet: S.miet, mk: S.mk, mkp: S.mkp, sets: S.sets };
     const txt = 'INVENTAR-STAND ' + JSON.stringify(d);
     const ok = () => toast('Kopiert. Jetzt im Chat mit Claude einfügen.', true);
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => teilen(txt)); else teilen(txt); },
@@ -760,6 +877,33 @@ Object.assign(A, {
   bedInv: d => { const b = S.bed.find(x => x.id === d.id); if (!b) return; b.inv = 1; save(); bNeu(b.t.replace(/, \d+ Stück$/, '')); },
   bedTeilen: () => teilen('Einkauf Mainfilm Equipment:\n' + S.bed.filter(b => b.st === 'offen').map(b => '• ' + b.t).join('\n')),
 });
+
+Object.assign(A, {
+  mietH: d => { MH = +d.v; zeichne(); }, mietG: d => bMietG(d.id), mietNeu: d => bMietNeu(d.id, d.v),
+  mietPreise: d => { S.mkp[d.id] = { miete: +$('#mgM').value || 0, kauf: +$('#mgK').value || 0 }; save(); zeichne(); bMietG(d.id); toast('Preise gespeichert', true); },
+  mietWeg: d => { const m = S.miet.find(x => x.id === d.id); if (!m || !confirm('Diesen Mietanlass löschen?')) return; S.miet = S.miet.filter(x => x.id !== d.id); save(); zeichne(); bMietG(m.g); },
+  mietOk: () => { const n = $('#mnG').value.trim(); if (!n) return $('#mnG').focus(); const t = Math.max(1, parseInt($('#mnT').value) || 1), preis = +$('#mnE').value || 0;
+    let k = mietKat().find(x => norm(x.n) === norm(n)); if (!k) { k = { id: 'm' + uid(), n, kat: '', miete: preis ? Math.round(preis / t) : 0, kauf: 0 }; S.mk.push(k); }
+    S.miet.push({ id: uid(), g: k.id, d: $('#mnD').value || heute(), t, v: $('#mnV').value.trim(), pr: $('#mnP').value.trim(), preis, st: 'sicher', wer: S.me });
+    zuBlatt(true); fertig('Miete eingetragen'); },
+  set: d => bSet(d.id), setNeu: () => bSetNeu(),
+  setMit: d => { const x = setsAlle().find(k => k.id === d.id); if (!x) return; if (!brauchtName(() => A.setMit(d))) return; bMit(); for (const id of x.items) { const i = BY[id]; if (!i) continue; const f = freiIn(i, CO.von, CO.bis); if (f > 0) CO.sel[id] = f; } coZeichne(); },
+  setZurueck: d => { const x = setsAlle().find(k => k.id === d.id); if (!x) return; let n = 0; for (const o of S.out) if (!o.zu && o.von <= heute() && x.items.includes(o.itemId)) { zurueck(o); n++; } zuBlatt(true); fertig(n + ' zurück im Lager'); },
+  setWeg: d => { if (!confirm('Dieses Set auflösen? Die Geräte bleiben im Bestand.')) return; S.sets = S.sets.filter(k => k.id !== d.id); zuBlatt(true); fertig('Set aufgelöst'); },
+  snPick: d => { if (SN.sel[d.id]) delete SN.sel[d.id]; else SN.sel[d.id] = 1; vibr(8); snZeichne(); },
+  snOk: () => { const n = $('#snN').value.trim(); if (!n) return $('#snN').focus(); const items = Object.keys(SN.sel); if (!items.length) return toast('Mindestens ein Gerät antippen'); const id = 'k' + uid(); S.sets.push({ id, n, items }); SN = null; zuBlatt(true); fertig('Set angelegt'); bSet(id); },
+  coSet: d => { const x = setsAlle().find(k => k.id === d.id); if (!x) return; let z = 0; for (const id of x.items) { const i = BY[id]; if (!i) continue; const f = freiIn(i, CO.von, CO.bis); if (f > 0) { CO.sel[id] = f; z++; } } coZeichne(); toast(z ? z + ' Positionen aus ' + x.n : 'Davon ist gerade nichts frei', !!z); vibr(); },
+  scEnde: () => { const e = SC && SC.ende; scStop(); zuBlatt(true); e && e(); },
+  scan: () => bScan('Scannen', 'Kamera auf einen Geräte- oder Koffer-Code halten', t => t.art === 'k' ? bSet(t.id) : bGeraet(t.id)),
+  coScan: () => { CO.pr = $('#coPr').value;
+    bScan('Packen scannen', 'Jedes Teil scannen, das mitkommt', t => { for (const id of scIds(t)) { const i = BY[id]; if (!i) { scZeile('Unbekannter Code'); continue; } const f = freiIn(i, CO.von, CO.bis);
+        if (f <= 0) scZeile(i.n + ': belegt oder nicht da'); else { CO.sel[id] = t.art === 'k' ? f : Math.min(f, (CO.sel[id] || 0) + 1); scZeile(i.n + (CO.sel[id] > 1 ? ' × ' + CO.sel[id] : ''), true); } } },
+      () => bMit(null, CO.pr, true)); },
+  ruScan: d => { const p = d.v, got = new Set();
+    bScan('Rückgabe scannen', 'Jedes Teil scannen, das zurück ist', t => { for (const id of scIds(t)) { const o = S.out.find(x => !x.zu && x.pr === p && x.itemId === id && !got.has(x.id));
+        if (!o) scZeile((BY[id] ? BY[id].n : 'Unbekannter Code') + ': nicht offen auf diesem Projekt'); else { got.add(o.id); scZeile(BY[id].n, true); } } },
+      () => { let n = 0; for (const o of S.out) if (got.has(o.id)) { zurueck(o); n++; } const rest = S.out.filter(o => !o.zu && o.pr === p).length; fertig(n ? `${n} zurück${rest ? ', ' + rest + ' noch offen' : ', alles da'}` : ''); bProjekt(p); }); },
+});
 let ZU = null;
 document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (!el || el.disabled) return; const f = A[el.dataset.a]; if (f) f(el.dataset, el, e); });
 document.addEventListener('input', e => {
@@ -772,6 +916,7 @@ document.addEventListener('input', e => {
   else if (t.id === 'coVon' || t.id === 'coBis') { CO.von = $('#coVon').value || heute(); CO.bis = $('#coBis').value; if (CO.bis && CO.bis < CO.von) { CO.bis = CO.von; $('#coBis').value = CO.von; } coZeichne(); }
   else if (t.id === 'meQ') { ME.suche = t.value; $('#meListe').innerHTML = suche(ME.suche, IT).slice(0, 40).map(k => `<button class="pick" data-a="meWahl" data-id="${k.id}">${bild(k)}<div style="min-width:0"><b>${esc(k.n)}</b><small>${KAT[k.k]}</small></div><span></span></button>`).join(''); }
   else if (t.id === 'neN') neTipp();
+  else if (t.id === 'snQ') { SN.q = t.value; snZeichne(); }
   else if (t.id === 'neK') NE.auto = false;
 });
 document.addEventListener('keydown', e => {
@@ -783,7 +928,8 @@ document.addEventListener('keydown', e => {
 function weg() {
   const h = location.hash.replace(/^#\/?/, '');
   if (h.startsWith('g/')) { VIEW = 'bestand'; zeichne(); bGeraet(decodeURIComponent(h.slice(2))); }
-  else if (['heute', 'bestand', 'inventur', 'einkauf', 'projekte', 'mehr'].includes(h)) geh(h, true);
+  else if (h.startsWith('k/')) { VIEW = 'bestand'; zeichne(); bSet(decodeURIComponent(h.slice(2))); }
+  else if (['heute', 'bestand', 'inventur', 'einkauf', 'mieten', 'projekte', 'mehr'].includes(h)) geh(h, true);
   else geh('heute', true);
 }
 window.addEventListener('hashchange', weg);
