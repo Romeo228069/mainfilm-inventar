@@ -282,7 +282,7 @@ function vHeute() {
   const prs = {}; for (const o of offen) (prs[o.pr] = prs[o.pr] || []).push(o);
   const erf = IT.filter(i => S.inv.done[i.id]).length, kauf = mietKat().filter(k => mietRechne(k).urteil === 'kaufen').length;
   return `<p class="gruss">${S.me ? 'Hallo ' + esc(S.me) : 'Mainfilm Inventar'}</p><h1 class="titel">Alles im Blick</h1>
-  <div class="ringreihe">
+  <div class="start-oben"><div class="ringreihe">
     <div class="ring"><svg viewBox="0 0 136 136" width="136" height="136"><circle class="bahn" cx="68" cy="68" r="56"/><circle class="wert" cx="68" cy="68" r="56" style="--ziel:${Math.round(352 * (1 - da / n))}"/></svg><div><span><b class="num" data-zahl="${da}">0</b><small>von ${IT.length} da</small></span></div></div>
     <div class="werte">
       <button data-a="filterSt" data-v="unterwegs"><i class="pkt rent"></i>Unterwegs<b>${z.unterwegs}</b></button>
@@ -290,22 +290,22 @@ function vHeute() {
       <button data-a="filterSt" data-v="defekt"><i class="pkt warn"></i>Defekt<b>${z.defekt}</b></button>
     </div>
   </div>
-  <div class="drei">
+  <div class="tun"><div class="drei">
     <button data-a="scan">${IC.scan}Scannen</button>
     <button data-a="mit">${IC.raus}Mitnehmen</button>
     <button data-a="zurueckWahl">${IC.rein}Zurück</button>
   </div>
-  <div class="zwei"><button class="kn" data-a="melden">Kaputt oder fehlt</button><button class="kn" data-a="mietNeu">Miete eintragen</button></div>
+  <div class="zwei"><button class="kn" data-a="melden">Kaputt oder fehlt</button><button class="kn" data-a="mietNeu">Miete eintragen</button></div></div></div>
   <h2>Braucht dich <small>${auf.length || 'nichts offen'}</small></h2>
   ${auf.length ? `<div class="zug">${auf.slice(0, 8).map(fallKarte).join('')}${auf.length > 8 ? `<button class="fall alle" data-a="alleAufgaben">Alle ${auf.length} ansehen</button>` : ''}</div>` : '<p class="leer">Alles da, wo es sein soll.</p>'}
-  <h2>Unterwegs <small>${Object.keys(prs).length ? Object.keys(prs).length + (Object.keys(prs).length === 1 ? ' Projekt' : ' Projekte') : ''}</small></h2>
-  ${Object.keys(prs).length ? Object.entries(prs).map(([p, ls]) => projektZeile(p, ls)).join('') : '<p class="leer">Kein Gerät auf einem Projekt.</p>'}
-  <h2>Außerdem</h2>
+  <div class="start-unten"><section><h2>Unterwegs <small>${Object.keys(prs).length ? Object.keys(prs).length + (Object.keys(prs).length === 1 ? ' Projekt' : ' Projekte') : ''}</small></h2>
+  ${Object.keys(prs).length ? `<div class="pliste">${Object.entries(prs).map(([p, ls]) => projektZeile(p, ls)).join('')}</div>` : '<p class="leer">Kein Gerät auf einem Projekt.</p>'}</section>
+  <section><h2>Außerdem</h2>
   <div class="kacheln">
     <button data-a="tab" data-tab="inventur"><b class="num">${erf}/${IT.length}</b><span>Inventur erfasst</span></button>
     <button data-a="tab" data-tab="einkauf"><b class="num">${S.bed.filter(b => b.st === 'offen').length}</b><span>zu besorgen</span></button>
     <button data-a="tab" data-tab="mieten"><b class="num">${kauf}</b><span>Käufe lohnen sich</span></button>
-  </div>`;
+  </div></section></div>`;
 }
 function evZeile(e) {
   const i = BY[e.itemId]; const c = { raus: 'pr', rein: 'ok', defekt: 'warn', fehlt: 'bad', ok: 'ok' }[e.art] || '';
@@ -340,7 +340,7 @@ function vProjekte() {
   const prs = {}; for (const o of S.out) if (BY[o.itemId]) (prs[o.pr] = prs[o.pr] || []).push(o);
   for (const m of S.miet) if (m.pr && !prs[m.pr]) prs[m.pr] = [];
   const l = Object.entries(prs).sort((a, b) => (b[1].some(o => !o.zu) - a[1].some(o => !o.zu)) || (b[1].map(o => o.von).sort().pop() || '').localeCompare(a[1].map(o => o.von).sort().pop() || ''));
-  return `<h2>Projekte <small>eigenes und gemietetes Material</small></h2>${l.length ? l.map(([p, ls]) => projektZeile(p, ls)).join('') : '<p class="leer">Noch kein Projekt. Sobald jemand Geräte mitnimmt, steht hier, was wann wo war.</p>'}
+  return `<h2>Projekte <small>eigenes und gemietetes Material</small></h2>${l.length ? `<div class="pliste">${l.map(([p, ls]) => projektZeile(p, ls)).join('')}</div>` : '<p class="leer">Noch kein Projekt. Sobald jemand Geräte mitnimmt, steht hier, was wann wo war.</p>'}
   <p style="margin-top:20px"><button class="kn haupt gross" data-a="mit">${IC.raus} Geräte mitnehmen</button></p>`;
 }
 function vMehr() {
@@ -364,6 +364,8 @@ function zeichne() {
   $('#view').innerHTML = `<div class="view">${v()}</div>`;
   const nav = ['inventur', 'einkauf', 'mieten'].includes(VIEW) ? 'mehr' : VIEW;
   $$('#unten [data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === nav));
+  $$('#seite [data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === VIEW));
+  const iS = $('#ichS'); if (iS) iS.innerHTML = S.me ? `<i>${esc(S.me.trim()[0].toUpperCase())}</i><b>${esc(S.me)}</b>` : 'Wer bist du?';
   $('#ich').innerHTML = S.me ? `<i>${esc(S.me.trim()[0].toUpperCase())}</i>` : 'Wer bist du?';
   $$('[data-zahl]').forEach(el => { const z = +el.dataset.zahl; let n = 0; const st = Math.max(1, Math.ceil(z / 14)); const t = setInterval(() => { n = Math.min(z, n + st); el.textContent = n; if (n >= z) clearInterval(t); }, 28); });
 }
@@ -947,6 +949,11 @@ window.addEventListener('hashchange', weg);
 
 (async () => {
   await idbAuf(); await fotosLaden();
+  $('#seite').innerHTML = `<div class="logo"><small>Mainfilm · Equipment</small>Inventar</div>
+    <nav>${[['heute', 'Start', 'heute'], ['bestand', 'Geräte', 'bestand'], ['projekte', 'Projekte', 'projekte']].map(([k, l, ic]) => `<button data-a="tab" data-tab="${k}">${IC[ic]}${l}</button>`).join('')}
+    <span class="trenner">Pflege</span>${[['inventur', 'Inventur', 'regal'], ['einkauf', 'Einkauf', 'neu'], ['mieten', 'Mieten oder kaufen', 'euro'], ['mehr', 'Mehr', 'mehr']].map(([k, l, ic]) => `<button data-a="tab" data-tab="${k}">${IC[ic]}${l}</button>`).join('')}</nav>
+    <button class="kn haupt voll" data-a="scan" style="margin-top:20px">${IC.scan} Scannen</button>
+    <button class="ich" id="ichS" data-a="name" aria-label="Name ändern"></button>`;
   $('#unten').innerHTML = [['heute', 'Start'], ['bestand', 'Geräte'], ['projekte', 'Projekte'], ['mehr', 'Mehr']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k]}${l}</button>`).join('');
   rechne(); weg();
   if (!S.me && !location.hash.startsWith('#/g/')) brauchtName(() => {});

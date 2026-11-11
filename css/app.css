@@ -298,3 +298,60 @@ label.feld input::placeholder,label.feld textarea::placeholder{color:rgba(205,18
   .etikett img,.etikett svg{width:84px;height:84px}
 }
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- Web-Fassung (ab 1000 px): Seitenleiste, breite Aufteilung, Details als Seitenpanel ---------- */
+.seite{display:none}
+.pliste{display:block}
+@media(min-width:1000px){
+  .seite{display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:256px;padding:30px 16px 20px;background:rgba(10,3,14,.5);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-right:1px solid var(--line);z-index:15}
+  .seite .logo{font:italic 800 28px/1 var(--display);text-transform:uppercase;padding:0 12px}
+  .seite .logo small{display:block;font:400 12px/1 var(--text);color:var(--mute);text-transform:none;letter-spacing:.02em;margin-bottom:8px}
+  .seite nav{display:grid;gap:4px;margin-top:30px}
+  .seite nav button{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:14px;font-weight:600;font-size:15px;color:var(--mute);transition:background .15s linear,color .15s linear}
+  .seite nav button:hover{background:var(--soft);color:#fff}
+  .seite nav button[aria-selected="true"]{background:var(--soft2);color:#fff}
+  .seite nav svg{width:22px;height:22px;flex:none}
+  .seite .trenner{font-size:11px;color:var(--gap);padding:20px 12px 6px;text-transform:uppercase;letter-spacing:.08em}
+  .seite .ich{margin-top:auto;padding:0 8px;gap:12px;justify-content:flex-start;width:100%}
+  .unten,.kopfz{display:none}
+  main{margin-left:256px}
+  .wrap{max-width:1320px;padding-left:48px;padding-right:48px}
+  main .wrap{padding-block:44px 64px}
+  h1.titel,.view>h2:first-child{font-size:46px;margin-bottom:26px}
+  h2{font-size:20px;margin-top:38px}
+  .start-oben{display:grid;grid-template-columns:minmax(340px,420px) minmax(0,1fr);gap:16px;align-items:stretch}
+  .ringreihe{margin:0;background:var(--soft);border-radius:var(--r);padding:26px;grid-template-columns:150px minmax(0,1fr)}
+  .ring,.ring svg{width:150px;height:150px}
+  .tun{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}
+  .drei{gap:12px}
+  .drei button{aspect-ratio:auto;max-height:none;min-height:132px;font-size:16px}
+  .zwei{margin-top:0;gap:12px}
+  .zug{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));overflow:visible;margin:0;padding:0;scroll-snap-type:none}
+  .fall{flex:none}
+  .fall.alle{min-height:132px}
+  .start-unten{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}
+  .pliste{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+  .pliste .projekt{margin:0}
+  .raster{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+  .zeilen{grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
+  .aktionen{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+  .suche{max-width:620px}
+  .filter{gap:0 26px}
+  label.feld:has(#stSel){max-width:300px}
+  .iv-stand,.notiz{max-width:760px}
+  .katz{max-width:760px}
+  .schleier{align-items:stretch;justify-content:flex-end}
+  .blatt{max-width:540px;max-height:none;height:100dvh;border-radius:30px 0 0 30px;transform:translateX(100%)}
+  .schleier.auf .blatt{transform:none}
+  .blatt .zeilen,.blatt .aktionen,.blatt .pliste{grid-template-columns:minmax(0,1fr)}
+  .toast{bottom:36px;left:calc(50% + 128px)}
+  .karte:hover,.projekt:hover,.kacheln button:hover,.aktionen button:hover,.drei button:hover,.fall:hover{transform:translateY(-3px)}
+  .fall{transition:transform .25s var(--spring)}
+  .kn:hover{background:rgba(255,255,255,.2)}
+  .kn.haupt:hover{background:#d24e8c}
+  .fall-k .kn:hover{background:rgba(22,16,27,.16)}
+  .fall-k .kn:first-child:hover{background:#2c2233}
+  .zeile[data-a]:hover,.werte button:hover{background:var(--soft2)}
+  .werte button{border-radius:12px;padding:0 8px;margin:0 -8px;width:calc(100% + 16px)}
+}
+@media(min-width:1500px){.raster{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}}
