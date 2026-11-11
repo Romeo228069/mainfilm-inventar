@@ -207,7 +207,7 @@ function rateKat(name) {
 function bildSrc(i) { return i.b && i.b.startsWith('idb:') ? FOTO.get(i.b.slice(4)) || '' : i.b || ''; }
 function bild(i, extra) {
   const src = bildSrc(i);
-  return `<div class="bild${src && i.b.startsWith('idb:') ? ' foto' : ''}">${src ? `<img loading="lazy" alt="" src="${esc(src)}">` : IC[i.k] || IC.Accessory}${extra || ''}</div>`;
+  return `<div class="bild${src && (i.bf || i.b.startsWith('idb:')) ? ' foto' : ''}">${src ? `<img loading="lazy" alt="" src="${esc(src)}">` : IC[i.k] || IC.Accessory}${extra || ''}</div>`;
 }
 function standZeile(i) {
   if (i.q === 1) return `<span class="pkt ${ST[i.st][1]}"></span>${ST[i.st][0]}`;
