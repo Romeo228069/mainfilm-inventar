@@ -84,7 +84,7 @@ function rechne() {
   for (const i of basis) {
     i.frei = Math.max(0, i.q - i.out - i.def - i.fehlt);
     i.st = i.fehlt ? 'fehlt' : i.def ? 'defekt' : i.out ? 'unterwegs' : i.z === 'neu' ? 'neu' : 'da';
-    i.hay = norm([i.n, i.m, KAT[i.k], i.k, i.sn, i.ort, i.notiz].join(' '));
+    i.hay = norm([i.n, i.m, KAT[i.k], i.k, i.sn, i.ort, i.notiz, i.eig].join(' '));
   }
   IT = basis;
 }
@@ -376,6 +376,7 @@ function bGeraet(id) {
       ${i.m ? `<div><span class="k">Modell</span><span>${esc(i.m)}</span></div>` : ''}
       ${i.zust ? `<div><span class="k">Zustand</span><span>${ZU_L[i.zust]}${i.mangel ? '<br><span style="color:var(--warn)">' + esc(i.mangel) + '</span>' : ''}</span></div>` : ''}
       ${i.nutz ? `<div><span class="k">Einsatz</span><span>${NUTZ_L[i.nutz]}</span></div>` : ''}
+      ${i.eig ? `<div><span class="k">Gehört</span><span>${esc(i.eig)}</span></div>` : ''}
       <div><span class="k">Standort</span><span>${i.ort ? esc(i.ort) : '<span style="color:var(--mute)">nicht eingetragen</span>'}</span></div>
       ${i.notiz ? `<div><span class="k">Notiz</span><span>${esc(i.notiz)}</span></div>` : ''}
       <div><span class="k">Seriennummer</span><span>${i.sn ? esc(i.sn) : '<span style="color:var(--mute)">fehlt noch</span>'}</span></div>
@@ -408,7 +409,7 @@ function coZeichne() {
   for (const id of Object.keys(CO.sel)) { const f = BY[id] ? fr(BY[id]) : 0; if (f <= 0) delete CO.sel[id]; else if (CO.sel[id] > f) CO.sel[id] = f; }
   const frei = IT.filter(i => i.q - i.def - i.fehlt > 0);
   const liste = (CO.q ? suche(CO.q, frei) : [...frei].sort((a, b) => (!!CO.sel[b.id] - !!CO.sel[a.id]) || Object.keys(KAT).indexOf(a.k) - Object.keys(KAT).indexOf(b.k) || a.n.localeCompare(b.n))).slice(0, 60);
-  $('#coListe', l).innerHTML = liste.map(i => `<button class="pick" data-a="coPick" data-id="${i.id}" aria-pressed="${!!CO.sel[i.id]}" ${fr(i) > 0 ? '' : 'disabled'}>${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${fr(i) <= 0 ? 'Belegt: ' + esc(konflikt(i, CO.von, CO.bis)) : CO.sel[i.id] && i.q > 1 ? CO.sel[i.id] + ' von ' + fr(i) + ' · nochmal tippen für mehr' : i.q > 1 ? fr(i) + ' frei' : KAT[i.k]}</small></div><span class="hak">${IC.hak}</span></button>`).join('') || '<p class="leer">Nichts frei.</p>';
+  $('#coListe', l).innerHTML = liste.map(i => `<button class="pick" data-a="coPick" data-id="${i.id}" aria-pressed="${!!CO.sel[i.id]}" ${fr(i) > 0 ? '' : 'disabled'}>${bild(i)}<div style="min-width:0"><b>${esc(i.n)}</b><small>${fr(i) <= 0 ? 'Belegt: ' + esc(konflikt(i, CO.von, CO.bis)) : CO.sel[i.id] && i.q > 1 ? CO.sel[i.id] + ' von ' + fr(i) + ' · nochmal tippen für mehr' : i.mangel ? '<span style="color:var(--warn)">Achtung: ' + esc(i.mangel) + '</span>' : i.q > 1 ? fr(i) + ' frei' : KAT[i.k]}</small></div><span class="hak">${IC.hak}</span></button>`).join('') || '<p class="leer">Nichts frei.</p>';
   const dz = passtDazu(CO.sel, fr);
   $('#coDazu', l).innerHTML = dz.length ? `<p class="tipp" style="margin-top:14px">Passt dazu</p><div class="dazu">${dz.map(i => `<button data-a="coPick" data-id="${i.id}">${bild(i)}${esc(i.n)}</button>`).join('')}</div>` : '';
   const n = Object.values(CO.sel).reduce((s, x) => s + x, 0);
@@ -444,12 +445,13 @@ let NE = null;
 function bNeu(vor, id) {
   NACH_NEU = null;
   const i = id ? BY[id] : null;
-  NE = i ? { id, n: i.n, k: i.k, q: i.q, m: i.m || '', sn: i.sn || '', ort: i.ort || '', notiz: i.notiz || '', foto: '' } : { n: vor || '', k: rateKat(vor || ''), q: 1, m: '', sn: '', foto: '', auto: true };
+  NE = i ? { id, n: i.n, k: i.k, q: i.q, m: i.m || '', sn: i.sn || '', ort: i.ort || '', notiz: i.notiz || '', eig: i.eig || '', foto: '' } : { n: vor || '', k: rateKat(vor || ''), q: 1, m: '', sn: '', foto: '', auto: true };
   blatt(i ? 'Bearbeiten' : 'Neues Gerät', `<label class="feld">Name<input id="neN" value="${esc(NE.n)}" placeholder="z. B. Aputure LS 600d" autocomplete="off"></label><div id="neTipp"></div>
     <label class="feld">Kategorie<select id="neK"><option value="">bitte wählen</option>${Object.entries(KAT).map(([k, l]) => `<option value="${k}" ${NE.k === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <div class="zwei-sp"><label class="feld">Menge<input id="neQ" type="number" inputmode="numeric" min="1" value="${NE.q}"></label><label class="feld">Seriennummer<input id="neSn" value="${esc(NE.sn)}" autocomplete="off"></label></div>
     <label class="feld">Modell<input id="neM" value="${esc(NE.m)}" autocomplete="off"></label>
     <datalist id="orte">${[...new Set(IT.map(x => x.ort).filter(Boolean))].map(o => `<option value="${esc(o)}">`).join('')}</datalist>
+    <label class="feld">Gehört<select id="neEig">${['', 'Mainfilm', "lookin' Friday", 'privat oder geliehen'].map(e => `<option value="${esc(e)}" ${(NE.eig || '') === e ? 'selected' : ''}>${e || 'nicht eingetragen'}</option>`).join('')}</select></label>
     <label class="feld">Standort<input id="neOrt" list="orte" value="${esc(NE.ort || '')}" placeholder="z. B. Regal 2, Koffer FX3" autocomplete="off"></label>
     <label class="feld">Notiz oder Zubehör<input id="neNotiz" value="${esc(NE.notiz || '')}" placeholder="z. B. mit Tasche und 2 Akkus" autocomplete="off"></label>
     <div class="fotofeld" id="neFoto"><button class="kn" data-a="neFoto">${IC.foto} Foto aufnehmen</button></div>
@@ -518,7 +520,7 @@ for (const m of S.mel) if (!m.zu && String(m.id).startsWith('s-') && !SEED.mel.s
 if (!S.inv) S.inv = { start: '', done: {} };
 for (const i of SEED.items) if (i.erf && !S.inv.done[i.id]) { S.inv.done[i.id] = 1; if (!S.inv.start) S.inv.start = i.lc || ''; }
 for (const b of S.bed) if (!b.st) b.st = b.zu ? 'da' : 'offen';
-for (const sb of SEED.bed || []) if (!S.bed.some(x => x.id === sb.id)) S.bed.push({ ...sb });
+for (const sb of SEED.bed || []) { const b = S.bed.find(x => x.id === sb.id); if (!b) S.bed.push({ ...sb }); else for (const f of ['info', 'p', 'l']) if (sb[f]) b[f] = sb[f]; }
 for (const sb of SEED.bed || []) if (sb.st === 'da') { const b = S.bed.find(x => x.id === sb.id); if (b && b.st !== 'da') { b.st = 'da'; b.inv = 1; b.zu = Date.now(); } }
 const ZU_L = { top: 'Einwandfrei', ok: 'Gebrauchsspuren, funktioniert', eing: 'Eingeschränkt nutzbar', defekt: 'Defekt' };
 const NUTZ_L = { oft: 'Oft im Einsatz', selten: 'Selten im Einsatz', weg: 'Wird nicht mehr gebraucht' };
@@ -601,6 +603,7 @@ function vInventur() {
   ${befund('Eingeschränkt', mang, i => gz(i, i.mangel))}
   ${befund('Nachkaufen', kauf, b => `<div class="zeile ohne"><div class="t"><b>${esc(b.t)}</b><span>aus der Bestandsaufnahme</span></div><button class="kn leise" data-a="tab" data-tab="einkauf">Einkauf</button></div>`)}
   ${befund('Selten im Einsatz', selten, i => gz(i, KAT[i.k]))}${befund('Kann weg', weg, i => gz(i, KAT[i.k]))}
+  ${(() => { const aus = (SEED.aus || []).filter(a => !BY[a.id]); return aus.length ? `<h2>Ausgebucht <small>${aus.length} · bei der Bestandsaufnahme als „gibt es nicht mehr“ erfasst</small></h2><div class="zeilen">${aus.map(a => `<div class="zeile breit">${bild(a)}<div class="t"><b>${esc(a.n)}</b><span>${a.q > 1 ? a.q + ' Stück · ' : ''}${KAT[a.k] || ''}</span></div><div class="akt"><button class="kn leise" data-a="ausHol" data-id="${a.id}" data-v="da">Ist doch da</button><button class="kn leise" data-a="ausHol" data-id="${a.id}" data-v="fehlt">Fehlt, suchen</button></div></div>`).join('')}</div>` : ''; })()}
   <h2>Stand übergeben</h2>
   <div class="zeilen">
     <div class="zeile ohne"><div class="t"><b>Antworten an Claude schicken</b><span>Kopiert alles Erfasste als Text. Im Chat einfügen, dann gilt es für alle.</span></div><button class="kn haupt" data-a="ivSenden">Kopieren</button></div>
@@ -611,7 +614,7 @@ function vInventur() {
 }
 function vEinkauf() {
   const g = st => S.bed.filter(b => b.st === st);
-  const z = (b, kn) => `<div class="zeile ohne breit2"><div class="t"><b>${esc(b.t)}</b><span>${esc(b.grund || b.wer || '')}${b.ts ? ' · ' + tag(new Date(b.ts).toISOString()) : ''}</span></div><div class="akt">${kn.map(([a, t, kl]) => `<button class="kn ${kl || ''}" data-a="${a}" data-id="${b.id}">${t}</button>`).join('')}</div></div>`;
+  const z = (b, kn) => `<div class="zeile ohne breit2"><div class="t"><b>${esc(b.t)}</b>${b.info ? `<span style="white-space:normal;color:var(--ink)">${esc(b.info)}</span>` : ''}<span>${b.p ? '<b style="display:inline;color:var(--ink)">' + esc(b.p) + '</b> · ' : ''}${esc(b.grund || b.wer || '')}${b.ts ? ' · ' + tag(new Date(b.ts).toISOString()) : ''}${b.l ? ` · <a href="${esc(b.l)}" target="_blank" rel="noopener" style="color:var(--mag-ink);font-weight:600">Ansehen</a>` : ''}</span></div><div class="akt">${kn.map(([a, t, kl]) => `<button class="kn ${kl || ''}" data-a="${a}" data-id="${b.id}">${t}</button>`).join('')}</div></div>`;
   const off = g('offen'), best = g('bestellt'), da = g('da').slice(-8).reverse();
   return `<h2>Einkauf <small>${off.length} zu besorgen</small></h2>
   <div class="suche">${IC.plus}<input id="bedN" enterkeyhint="done" autocomplete="off" placeholder="Was brauchen wir? Eintippen und Enter" aria-label="Bedarf eintragen"></div>
@@ -675,7 +678,7 @@ const A = {
   neFoto: () => fotoWahl(url => { NE.foto = url; $('#neFoto').innerHTML = `<div class="bild foto"><img src="${url}" alt=""></div><button class="kn" data-a="neFoto">${IC.foto} Anderes Foto</button>`; }),
   plusEins: d => { const i = BY[d.id]; patch(d.id, { q: i.q + 1 }); log(d.id, 'ok', 'Menge auf ' + (i.q + 1) + ' erhöht'); zuBlatt(true); fertig(i.n + ': jetzt ' + (i.q + 1) + ' Stück'); },
   neOk: () => { if (!brauchtName(() => {})) return; const n = $('#neN').value.trim(), k = $('#neK').value; if (!n) return $('#neN').focus(); if (!k) { $('#neK').focus(); return toast('Kategorie wählen'); }
-    const o = { n, k, q: Math.max(1, parseInt($('#neQ').value) || 1), sn: $('#neSn').value.trim(), m: $('#neM').value.trim(), ort: $('#neOrt').value.trim(), notiz: $('#neNotiz').value.trim() };
+    const o = { n, k, q: Math.max(1, parseInt($('#neQ').value) || 1), sn: $('#neSn').value.trim(), m: $('#neM').value.trim(), ort: $('#neOrt').value.trim(), eig: $('#neEig').value, notiz: $('#neNotiz').value.trim() };
     let id = NE.id;
     if (id) { patch(id, o); log(id, 'ok', 'Angaben geändert'); }
     else { id = 'n' + uid(); S.neu.push({ id, ...o, z: 'ok', lc: heute(), b: '' }); log(id, 'ok', 'neu angelegt'); }
@@ -743,6 +746,10 @@ Object.assign(A, {
     const txt = 'INVENTAR-STAND ' + JSON.stringify(d);
     const ok = () => toast('Kopiert. Jetzt im Chat mit Claude einfügen.', true);
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => teilen(txt)); else teilen(txt); },
+  ausHol: d => { if (!brauchtName(() => A.ausHol(d))) return; const a = (SEED.aus || []).find(x => x.id === d.id); if (!a) return;
+    if (S.it[a.id]) delete S.it[a.id].arch; if (!S.neu.some(x => x.id === a.id)) S.neu.push({ ...a, z: 'ok', lc: heute() });
+    S.inv.done[a.id] = Date.now(); log(a.id, 'ok', d.v === 'fehlt' ? 'wieder im Bestand, wird gesucht' : 'wieder im Bestand');
+    save(); rechne(); if (d.v === 'fehlt') melde(a.id, 'fehlt', a.q, 'war ausgebucht, wird gesucht'); fertig(d.v === 'fehlt' ? 'Als fehlend eingetragen' : 'Wieder im Bestand'); },
   ivBericht: () => { const done = IT.filter(i => S.inv.done[i.id]).length; const L = (t, l) => l.length ? `\n${t}: ${l.join(', ')}` : '';
     teilen(`Mainfilm Inventar, Stand ${tag(heute())}: ${done} von ${IT.length} Positionen erfasst.` + L('Fehlt', IT.filter(i => i.fehlt).map(i => i.n)) + L('Defekt', IT.filter(i => i.def).map(i => i.n)) + L('Eingeschränkt', IT.filter(i => i.mangel).map(i => i.n + ' (' + i.mangel + ')')) + L('Neu', IT.filter(i => S.neu.some(n => n.id === i.id)).map(i => i.n)) + L('Kann weg', IT.filter(i => i.nutz === 'weg').map(i => i.n)) + L('Zu besorgen', S.bed.filter(b => b.st === 'offen').map(b => b.t))); },
   bedBest: d => { const b = S.bed.find(x => x.id === d.id); if (b) { b.st = 'bestellt'; b.ts = Date.now(); fertig('Als bestellt markiert'); } },
