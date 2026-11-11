@@ -451,7 +451,7 @@ function bNeu(vor, id) {
     <div class="zwei-sp"><label class="feld">Menge<input id="neQ" type="number" inputmode="numeric" min="1" value="${NE.q}"></label><label class="feld">Seriennummer<input id="neSn" value="${esc(NE.sn)}" autocomplete="off"></label></div>
     <label class="feld">Modell<input id="neM" value="${esc(NE.m)}" autocomplete="off"></label>
     <datalist id="orte">${[...new Set(IT.map(x => x.ort).filter(Boolean))].map(o => `<option value="${esc(o)}">`).join('')}</datalist>
-    <label class="feld">Gehört<select id="neEig">${['', 'Mainfilm', "lookin' Friday", 'privat oder geliehen'].map(e => `<option value="${esc(e)}" ${(NE.eig || '') === e ? 'selected' : ''}>${e || 'nicht eingetragen'}</option>`).join('')}</select></label>
+    <label class="feld">Gehört<select id="neEig">${['', 'Firma', 'privat oder geliehen'].map(e => `<option value="${esc(e)}" ${(NE.eig || '') === e ? 'selected' : ''}>${e || 'nicht eingetragen'}</option>`).join('')}</select></label>
     <label class="feld">Standort<input id="neOrt" list="orte" value="${esc(NE.ort || '')}" placeholder="z. B. Regal 2, Koffer FX3" autocomplete="off"></label>
     <label class="feld">Notiz oder Zubehör<input id="neNotiz" value="${esc(NE.notiz || '')}" placeholder="z. B. mit Tasche und 2 Akkus" autocomplete="off"></label>
     <div class="fotofeld" id="neFoto"><button class="kn" data-a="neFoto">${IC.foto} Foto aufnehmen</button></div>
