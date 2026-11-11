@@ -191,7 +191,7 @@ function passtDazu(sel, fr) {
   return Object.entries(punkte).filter(([id]) => !sel[id] && BY[id] && fr(BY[id]) > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id]) => BY[id]);
 }
 const VORLAGE = {
-  'Ready to Shoot': [/^sony fx3$/i, /cage für fx3/i, /xlr kit/i, /magic arm kurz/i, /ntg5/i, /mini v-mount platte/i, /v-mount akku 98 wh micro/i, /akku np-fz100/i, /d-tap auf sony dummy/i, /ssd extern/i],
+  'Ready to Shoot': [/^sony fx3$/i, /cage für fx3/i, /xlr kit/i, /magic arm kurz/i, /ntg5/i, /mini v-mount platte/i, /v-mount akku 98 wh micro/i, /akku np-fz100/i, /d-tap auf sony dummy/i],
   Interview: [/fx3/i, /a7s/i, /sony 16-35/i, /canon 24-70/i, /metabones/i, /lav mic/i, /wireless pro/i, /mkh 8070/i, /boom pole/i, /tascam/i, /mdr-7506/i, /aputure 80c/i, /molus/i, /softbox 120/i, /c-stand lang/i, /sandsack/i, /akku np-fz100/i, /videostativ/i, /shinobi/i],
   Event: [/fx3/i, /a7s/i, /rs 4 pro/i, /sony 16-35/i, /canon 70-200/i, /metabones/i, /wireless go/i, /ntg5/i, /akku np-fz100/i, /variabel 82/i, /t2c/i],
   Social: [/iphone 16/i, /smartphone rig/i, /wireless go/i, /t2c/i, /insta360 x3/i],
