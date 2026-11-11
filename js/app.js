@@ -191,7 +191,7 @@ function passtDazu(sel, fr) {
   return Object.entries(punkte).filter(([id]) => !sel[id] && BY[id] && fr(BY[id]) > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id]) => BY[id]);
 }
 const VORLAGE = {
-  'Ready to Shoot': [/^sony fx3$/i, /cage für fx3/i, /xlr kit/i, /magic arm kurz/i, /ntg5/i, /mini v-mount platte/i, /v-mount akku 98 wh micro/i, /akku np-fz100/i, /d-tap auf sony dummy/i],
+  'Ready to Shoot': [/^sony fx3$/i, /cage für fx3/i, /xlr kit/i, /magic arm kurz/i, /ntg5/i, /smallrig v-mount platte/i, /v-mount akku 98 wh micro/i, /akku np-fz100/i, /d-tap auf sony dummy/i],
   Interview: [/fx3/i, /a7s/i, /sony 16-35/i, /canon 24-70/i, /metabones/i, /lav mic/i, /wireless pro/i, /mkh 8070/i, /boom pole/i, /tascam/i, /mdr-7506/i, /aputure 80c/i, /molus/i, /softbox 120/i, /c-stand lang/i, /sandsack/i, /akku np-fz100/i, /videostativ/i, /shinobi/i],
   Event: [/fx3/i, /a7s/i, /rs 4 pro/i, /sony 16-35/i, /canon 70-200/i, /metabones/i, /wireless go/i, /ntg5/i, /akku np-fz100/i, /variabel 82/i, /t2c/i],
   Social: [/iphone 16/i, /smartphone rig/i, /wireless go/i, /t2c/i, /insta360 x3/i],
@@ -590,7 +590,7 @@ function vInventur() {
   const gz = (i, sub) => `<button class="zeile" data-a="geraet" data-id="${i.id}">${bild(i)}<div class="t"><b>${esc(i.n)}</b><span>${esc(sub)}</span></div><span></span></button>`;
   return `<h2>Bestandsaufnahme <small>${S.inv.start ? 'seit ' + tag(S.inv.start) : 'noch nicht begonnen'}</small></h2>
   <div class="iv-stand"><div><b class="gross-zahl num">${done}</b><span> von ${ges} erfasst</span></div><div class="bahn"><i style="width:${ges ? done / ges * 100 : 0}%"></i></div></div>
-  ${next ? `<p><button class="kn haupt gross voll" data-a="inventur" data-v="${next}">${IC.regal} ${done ? 'Weiter mit' : 'Los, mit'} ${KAT[next]}</button></p><p class="notiz">Je Gerät ein paar Fragen zum Antippen: da, Zustand, vollständig, Standort. Was fehlt, landet automatisch im Einkauf. Du kannst jederzeit aufhören, der Stand bleibt.</p>` : '<p class="leer">Alles erfasst. Unten kannst du den Stand übergeben.</p>'}
+  ${next ? `<p><button class="kn haupt gross voll" data-a="inventur" data-v="${next}">${IC.regal} ${done ? 'Weiter mit' : 'Los, mit'} ${KAT[next]}</button></p>${done ? `<p><button class="kn gross voll" data-a="ivSenden">Antworten an Claude schicken</button></p>` : ''}<p class="notiz">Je Gerät ein paar Fragen zum Antippen: da, Zustand, vollständig, Standort. Was fehlt, landet automatisch im Einkauf. Du kannst jederzeit aufhören, der Stand bleibt.</p>` : '<p class="leer">Alles erfasst. Unten kannst du den Stand übergeben.</p>'}
   <div>${katListe().map(k => { const a = IT.filter(i => i.k === k), d = a.filter(i => S.inv.done[i.id]).length; return `<div class="katz"><b>${KAT[k]} <span class="num" style="font-weight:400;color:var(--mute)">${d} von ${a.length}</span></b><button class="kn ${d === a.length ? 'leise' : ''}" data-a="${d === a.length ? 'ivNeu' : 'inventur'}" data-v="${k}">${d === a.length ? '+ Neues' : d ? 'Weiter' : 'Start'}</button><div class="bahn"><i style="width:${d / a.length * 100}%"></i></div></div>`; }).join('')}</div>
   <h2>Neu dazugekommen <small>${S.neu.filter(i => !(S.it[i.id] || {}).arch).length}</small></h2>
   <div class="zeilen">${IT.filter(i => S.neu.some(n => n.id === i.id)).map(i => gz(i, KAT[i.k] + (i.q > 1 ? ' · ' + i.q + ' Stück' : ''))).join('')}</div>
@@ -602,6 +602,7 @@ function vInventur() {
   ${befund('Selten im Einsatz', selten, i => gz(i, KAT[i.k]))}${befund('Kann weg', weg, i => gz(i, KAT[i.k]))}
   <h2>Stand übergeben</h2>
   <div class="zeilen">
+    <div class="zeile ohne"><div class="t"><b>Antworten an Claude schicken</b><span>Kopiert alles Erfasste als Text. Im Chat einfügen, dann gilt es für alle.</span></div><button class="kn haupt" data-a="ivSenden">Kopieren</button></div>
     <div class="zeile ohne"><div class="t"><b>Stand als Datei</b><span>Alles Erfasste samt Fotos, zum Einspielen in den Grundbestand</span></div><button class="kn" data-a="export">Speichern</button></div>
     <div class="zeile ohne"><div class="t"><b>Kurzbericht</b><span>Zahlen und Befunde als Text zum Weiterschicken</span></div><button class="kn" data-a="ivBericht">Teilen</button></div>
     <div class="zeile ohne"><div class="t"><b>Neue Runde</b><span>Setzt nur den Fortschritt zurück, nicht die Antworten</span></div><button class="kn leise" data-a="ivReset">Neu beginnen</button></div>
@@ -736,6 +737,11 @@ Object.assign(A, {
   ivWasFoto: () => fotoWahl(url => { const n = $('#ivNote').value; IV.foto = url; ivZeichne(); $('#ivNote').value = n; }),
   ivNeu: d => { bNeu(''); NACH_NEU = d.v; NE.k = d.v; NE.auto = false; $('#neK').value = d.v; },
   ivReset: () => { if (!confirm('Fortschritt der Bestandsaufnahme zurücksetzen? Antworten und Zustände bleiben erhalten.')) return; S.inv = { start: '', done: {} }; fertig('Neue Runde'); },
+  ivSenden: () => { const eig = x => !/^(s-|k-)/.test(String(x.id));
+    const d = { v: 1, wer: S.me, am: heute(), it: S.it, neu: S.neu, mel: S.mel.filter(m => eig(m) || m.zu), out: S.out.filter(o => eig(o) || o.zu), bed: S.bed.filter(b => eig(b) || b.st !== (SEED.bed.find(x => x.id === b.id) || {}).st), erfasst: Object.keys(S.inv.done) };
+    const txt = 'INVENTAR-STAND ' + JSON.stringify(d);
+    const ok = () => toast('Kopiert. Jetzt im Chat mit Claude einfügen.', true);
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => teilen(txt)); else teilen(txt); },
   ivBericht: () => { const done = IT.filter(i => S.inv.done[i.id]).length; const L = (t, l) => l.length ? `\n${t}: ${l.join(', ')}` : '';
     teilen(`Mainfilm Inventar, Stand ${tag(heute())}: ${done} von ${IT.length} Positionen erfasst.` + L('Fehlt', IT.filter(i => i.fehlt).map(i => i.n)) + L('Defekt', IT.filter(i => i.def).map(i => i.n)) + L('Eingeschränkt', IT.filter(i => i.mangel).map(i => i.n + ' (' + i.mangel + ')')) + L('Neu', IT.filter(i => S.neu.some(n => n.id === i.id)).map(i => i.n)) + L('Kann weg', IT.filter(i => i.nutz === 'weg').map(i => i.n)) + L('Zu besorgen', S.bed.filter(b => b.st === 'offen').map(b => b.t))); },
   bedBest: d => { const b = S.bed.find(x => x.id === d.id); if (b) { b.st = 'bestellt'; b.ts = Date.now(); fertig('Als bestellt markiert'); } },
