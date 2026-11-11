@@ -229,9 +229,9 @@ function blatt(titel, leib, fuss) {
   return s;
 }
 function zuBlatt(sofort) {
-  const s = $('.schleier'); if (!s) return;
+  if (sofort) { $$('.schleier').forEach(x => x.remove()); document.body.style.overflow = ''; return; }
+  const s = $('.schleier:not([data-weg])'); if (!s) return;
   document.body.style.overflow = '';
-  if (sofort) return s.remove();
   s.classList.remove('auf'); s.dataset.weg = '1'; setTimeout(() => s.remove(), 380);
   if (location.hash.startsWith('#/g/')) history.replaceState(null, '', '#/' + VIEW);
 }
@@ -278,18 +278,18 @@ function vHeute() {
   const prs = {}; for (const o of offen) (prs[o.pr] = prs[o.pr] || []).push(o);
   const letzte = S.ev.slice(-6).reverse();
   return `<div class="zahlen">${Object.entries(ST).map(([k, [l, c]]) => `<button data-a="filterSt" data-v="${k}"><b class="num" data-zahl="${z[k]}">0</b><span><i class="pkt ${c}"></i>${l}</span></button>`).join('')}</div>
+  <div class="aktionen" style="margin-top:18px">
+    <button data-a="tab" data-tab="inventur"><i style="color:var(--mag-ink)">${IC.regal}</i><div><b>Bestandsaufnahme: ${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</b><span>Fragen je Gerät durchklicken, bis der Stand stimmt</span></div></button>
+    <button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf: ${S.bed.filter(b => b.st === 'offen').length} zu besorgen, ${S.bed.filter(b => b.st === 'bestellt').length} bestellt</b><span>Bedarf sammeln, Bestellung abhaken, Neues einpflegen</span></div></button>
+  </div>
   <h2>Zu erledigen <small>${auf.length ? auf.length + ' offen' : ''}</small></h2>
   <div class="zeilen">${auf.length ? auf.slice(0, 12).map(a => `<div class="zeile breit"><button data-a="geraet" data-id="${a.i.id}" aria-label="${esc(a.i.n)}">${bild(a.i)}</button><div class="t"><span class="marke ${a.m[1]}">${a.m[0]}</span><b>${esc(a.i.n)}</b><span>${esc(a.t)}</span></div><div class="akt">${a.k.map((k, n) => `<button class="kn ${n ? 'leise' : ''}" data-a="${k[0]}" data-id="${k[2]}" data-v="${k[3] || ''}">${k[1]}</button>`).join('')}</div></div>`).join('') : '<p class="leer">Nichts offen. Alles da, wo es sein soll.</p>'}</div>
   ${auf.length > 12 ? `<p class="notiz">und ${auf.length - 12} weitere</p>` : ''}
   <h2>Bestand pflegen</h2>
   <div class="aktionen">
-    ${neu ? `<button data-a="regal" data-v="neu"><i>${IC.regal}</i><div><b>${neu} Positionen noch nie am Regal geprüft</b><span>Karte für Karte durchgehen: stimmt, fehlt, defekt</span></div></button>` : ''}
     ${ohneFoto ? `<button data-a="regal" data-v="foto"><i>${IC.foto}</i><div><b>${ohneFoto} Positionen ohne Foto</b><span>Mit dem Telefon direkt am Regal aufnehmen</span></div></button>` : ''}
     ${ohneSn ? `<button data-a="regal" data-v="sn"><i>${IC.frage}</i><div><b>${ohneSn} Kameras, Objektive und Monitore ohne Seriennummer</b><span>Wichtig für Versicherung und Diebstahl</span></div></button>` : ''}
   </div>
-  <h2>Das brauchen wir <small>${S.bed.filter(b => !b.zu).length} offen</small></h2>
-  <div class="zeilen">${S.bed.filter(b => !b.zu).map(b => `<div class="zeile ohne"><div class="t"><b>${esc(b.t)}</b><span>${esc(b.wer || '')}${b.ts ? ' · ' + tag(new Date(b.ts).toISOString()) : ''}</span></div><button class="kn leise" data-a="bedOk" data-id="${b.id}">Ist da</button></div>`).join('')}</div>
-  <div class="suche" style="margin-top:10px">${IC.plus}<input id="bedN" enterkeyhint="done" autocomplete="off" placeholder="Was fehlt uns? Eintippen und Enter" aria-label="Bedarf eintragen"></div>
   <h2>Unterwegs und geplant</h2>
   ${Object.keys(prs).length ? Object.entries(prs).map(([p, ls]) => projektZeile(p, ls)).join('') : '<p class="leer">Kein Gerät auf einem Projekt.</p>'}
   ${letzte.length ? `<h2>Zuletzt</h2><ul class="verlauf">${letzte.map(evZeile).join('')}</ul>` : ''}`;
@@ -329,7 +329,9 @@ function vProjekte() {
   <p style="margin-top:20px"><button class="kn haupt gross" data-a="mit">${IC.raus} Geräte mitnehmen</button></p>`;
 }
 function vMehr() {
-  return `<h2>Ich</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>${esc(S.me || 'Kein Name')}</b><span>Steht bei jeder Buchung und Meldung</span></div><button class="kn" data-a="name">Ändern</button></div></div>
+  return `<div class="aktionen"><button data-a="tab" data-tab="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>${IT.filter(i => S.inv.done[i.id]).length} von ${IT.length} erfasst</span></div></button><button data-a="tab" data-tab="einkauf"><i>${IC.neu}</i><div><b>Einkauf</b><span>${S.bed.filter(b => b.st === 'offen').length} zu besorgen</span></div></button></div>
+  <h2>Ich</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>${esc(S.me || 'Kein Name')}</b><span>Steht bei jeder Buchung und Meldung</span></div><button class="kn" data-a="name">Ändern</button></div></div>
+  <h2>Projekte</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>Welches Gerät war wo</b><span>Alle Projekte mit ihren Geräten</span></div><button class="kn" data-a="tab" data-tab="projekte">Öffnen</button></div></div>
   <h2>Etiketten</h2><div class="zeilen"><div class="zeile ohne"><div class="t"><b>QR-Etiketten drucken</b><span>Telefonkamera draufhalten, das Gerät öffnet sich hier</span></div><button class="kn" data-a="etiketten">Drucken</button></div></div>
   <h2>Daten</h2><div class="zeilen">
     <div class="zeile ohne"><div class="t"><b>Sicherung speichern</b><span>Alle Buchungen, Meldungen und Fotos als Datei</span></div><button class="kn" data-a="export">Speichern</button></div>
@@ -341,7 +343,7 @@ function vMehr() {
   <p class="notiz">Grundbestand aus Notion, Stand ${tag(SEED.stand)}. ${SEED.items.length} Positionen. Preise und Versicherungswerte stehen bewusst nicht auf dieser öffentlichen Seite, sie bleiben in Notion.</p>`;
 }
 function zeichne() {
-  const v = { heute: vHeute, bestand: vBestand, projekte: vProjekte, mehr: vMehr }[VIEW] || vHeute;
+  const v = { heute: vHeute, bestand: vBestand, inventur: vInventur, einkauf: vEinkauf, projekte: vProjekte, mehr: vMehr }[VIEW] || vHeute;
   $('#view').innerHTML = `<div class="view">${v()}</div>`;
   $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === VIEW));
   $('#ich').innerHTML = S.me ? `<b>${esc(S.me)}</b><i>${esc(S.me.trim()[0].toUpperCase())}</i>` : 'Wer bist du?';
@@ -370,6 +372,8 @@ function bGeraet(id) {
     <div class="fakten">
       <div><span class="k">Menge</span><span class="num">${i.q}</span></div>
       ${i.m ? `<div><span class="k">Modell</span><span>${esc(i.m)}</span></div>` : ''}
+      ${i.zust ? `<div><span class="k">Zustand</span><span>${ZU_L[i.zust]}${i.mangel ? '<br><span style="color:var(--warn)">' + esc(i.mangel) + '</span>' : ''}</span></div>` : ''}
+      ${i.nutz ? `<div><span class="k">Einsatz</span><span>${NUTZ_L[i.nutz]}</span></div>` : ''}
       <div><span class="k">Standort</span><span>${i.ort ? esc(i.ort) : '<span style="color:var(--mute)">nicht eingetragen</span>'}</span></div>
       ${i.notiz ? `<div><span class="k">Notiz</span><span>${esc(i.notiz)}</span></div>` : ''}
       <div><span class="k">Seriennummer</span><span>${i.sn ? esc(i.sn) : '<span style="color:var(--mute)">fehlt noch</span>'}</span></div>
@@ -436,6 +440,7 @@ function meZeichne() {
 }
 let NE = null;
 function bNeu(vor, id) {
+  NACH_NEU = null;
   const i = id ? BY[id] : null;
   NE = i ? { id, n: i.n, k: i.k, q: i.q, m: i.m || '', sn: i.sn || '', ort: i.ort || '', notiz: i.notiz || '', foto: '' } : { n: vor || '', k: rateKat(vor || ''), q: 1, m: '', sn: '', foto: '', auto: true };
   blatt(i ? 'Bearbeiten' : 'Neues Gerät', `<label class="feld">Name<input id="neN" value="${esc(NE.n)}" placeholder="z. B. Aputure LS 600d" autocomplete="off"></label><div id="neTipp"></div>
@@ -493,7 +498,7 @@ function bAktion() {
     <button data-a="melden" data-v="defekt"><i style="color:var(--warn)">${IC.warn}</i><div><b>Defekt melden</b><span>Mit Foto und kurzer Beschreibung</span></div></button>
     <button data-a="melden" data-v="fehlt"><i style="color:var(--bad)">${IC.frage}</i><div><b>Fehlt melden</b><span>Etwas ist nicht da, wo es sein soll</span></div></button>
     <button data-a="neu"><i>${IC.neu}</i><div><b>Neues Gerät</b><span>Name, Foto, fertig</span></div></button>
-    <button data-a="regal" data-v="neu"><i>${IC.regal}</i><div><b>Regal prüfen</b><span>Ungeprüftes Karte für Karte bestätigen</span></div></button>
+    <button data-a="inventur"><i>${IC.regal}</i><div><b>Bestandsaufnahme</b><span>Gerät für Gerät durchfragen</span></div></button>
   </div>`);
 }
 function teilen(txt) {
@@ -501,6 +506,111 @@ function teilen(txt) {
   else { try { navigator.clipboard.writeText(txt); toast('In die Zwischenablage kopiert', true); } catch (e) {} }
 }
 function datei(name, inhalt, typ) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([inhalt], { type: typ })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+
+
+/* ---------- Bestandsaufnahme: geführte Fragen je Gerät ---------- */
+if (!S.inv) S.inv = { start: '', done: {} };
+for (const b of S.bed) if (!b.st) b.st = b.zu ? 'da' : 'offen';
+const ZU_L = { top: 'Einwandfrei', ok: 'Gebrauchsspuren, funktioniert', eing: 'Eingeschränkt nutzbar', defekt: 'Defekt' };
+const NUTZ_L = { oft: 'Oft im Einsatz', selten: 'Selten im Einsatz', weg: 'Wird nicht mehr gebraucht' };
+const J = (f, nein) => ({ f, nein });
+function fragenFuer(i) {
+  const n = norm(i.n);
+  if (i.k === 'Camera') return [J('Sensor sauber, keine Flecken im Bild?', { mangel: 'Sensor verschmutzt' }), J('Gehäusedeckel und alle Klappen dran?', { kauf: 'Gehäusedeckel oder Klappe für ' + i.n })];
+  if (i.k === 'Lens') return [J('Front- und Rückdeckel dabei?', { kauf: 'Objektivdeckel für ' + i.n }), J('Glas frei von Kratzern, Staub und Pilz?', { mangel: 'Glas nicht sauber' }), J('Fokus- und Zoomring laufen sauber?', { mangel: 'Ring läuft nicht sauber' })];
+  if (i.k === 'Audio') return /xlr|klinke|adapter|kabel/.test(n) ? [J('Stecker fest, kein Knacken oder Wackeln?', { mangel: 'Stecker wackelt oder knackt' })] : [J('Getestet: Signal kommt sauber an?', { mangel: 'Signal nicht sauber' }), J('Windschutz, Klemme und Zubehör vollständig?', { kauf: 'Zubehör für ' + i.n })];
+  if (i.k === 'Light') return [J('Getestet: leuchtet, Lüfter läuft ruhig?', { mangel: 'Leuchtet nicht sauber oder Lüfter laut' }), J('Netzteil, Kabel und Halterung dabei?', { kauf: 'Netzteil oder Kabel für ' + i.n })];
+  if (i.k === 'Light Support' || i.k === 'Camera Support') return [J('Alles fest, nichts verbogen, Klemmen halten?', { mangel: 'Klemmt, verbogen oder hält nicht' }), J('Platten, Zapfen und Schrauben vollständig?', { kauf: 'Kleinteile für ' + i.n })];
+  if (i.k === 'Monitor') return [J('Display ohne Kratzer und Pixelfehler?', { mangel: 'Display beschädigt' }), J('Kabel, Akkuplatte und Sonnenschutz dabei?', { kauf: 'Zubehör für ' + i.n })];
+  if (i.k === 'Filter') return [J('Glas ohne Kratzer?', { mangel: 'Glas verkratzt' }), J('Dose oder Etui dabei?', { kauf: 'Filteretui für ' + i.n })];
+  if (i.k === 'Power') return /akku|v-mount/.test(n) ? [J('Halten die Akkus die Ladung noch gut?', { mangel: 'Akku schwach' }), J('Gehäuse heil, nichts aufgebläht?', { mangel: 'Akku beschädigt, nicht mehr laden' })] : [J('Kabel und Stecker unbeschädigt?', { mangel: 'Kabel oder Stecker beschädigt' })];
+  return [];
+}
+function ivSchritte(i) { const s = ['da', 'zust', ...fragenFuer(i).map((_, k) => 'f' + k), 'ort']; if (['Camera', 'Lens', 'Monitor'].includes(i.k) && !i.sn) s.push('sn'); if (!i.b) s.push('foto'); s.push('nutz'); return s; }
+let IV = null, NACH_NEU = null;
+const katListe = () => Object.keys(KAT).filter(k => IT.some(i => i.k === k));
+const ivOffen = k => IT.filter(i => i.k === k && !S.inv.done[i.id]);
+function bInventur(kat) {
+  if (!brauchtName(() => bInventur(kat))) return;
+  if (!kat) kat = katListe().find(k => ivOffen(k).length) || katListe()[0];
+  if (!S.inv.start) { S.inv.start = heute(); save(); }
+  IV = { kat, ids: ivOffen(kat).sort((a, b) => a.n.localeCompare(b.n)).map(i => i.id), n: 0, st: 0, sub: null, q: 0, zust: null, mangel: [], foto: '', lastOrt: IV ? IV.lastOrt : '' };
+  blatt(KAT[kat], '<div class="pruef" id="ivIn"></div>');
+  ivZeichne();
+}
+function ivZeichne(rein) {
+  const l = leib(); if (!l || !IV) return;
+  const i = BY[IV.ids[IV.n]]; if (!i) return ivEnde(IV.kat);
+  const steps = ivSchritte(i), sc = IV.sub || steps[IV.st];
+  const B = (v, t, kl, sub) => `<button data-a="ivA" data-v="${v}" class="${kl || ''}"><span>${t}</span>${sub ? `<small>${sub}</small>` : ''}</button>`;
+  let f = '', w = '';
+  if (sc === 'da') { f = 'Liegt es vor dir?'; w = B('schnell', 'Da, einwandfrei und komplett', 'haupt', 'ein Tipp, fertig') + B('ja', i.q > 1 ? 'Ja, alle ' + i.q + ' sind da' : 'Ja, ist da', '', 'weiter mit Zustand') + (i.q > 1 ? B('teil', 'Nicht alle') : '') + B('nein', 'Nein, fehlt') + B('weg', 'Gibt es nicht mehr') + B('spaeter', 'Später', '', 'bleibt offen'); }
+  else if (sc === 'menge') { f = `Wie viele von ${i.q} liegen da?`; w = `<div style="text-align:center;margin-bottom:8px"><div class="zaehler"><button data-a="ivQ" data-v="-1" aria-label="weniger">−</button><span class="num">${IV.q}</span><button data-a="ivQ" data-v="1" aria-label="mehr">+</button></div></div>` + (IV.q < i.q ? B('fehlen', `Die anderen ${i.q - IV.q} fehlen`, 'haupt') + B('falsch', 'Die Liste war falsch', '', 'Menge auf ' + IV.q + ' setzen') : B('falsch', IV.q === i.q ? 'Stimmt doch' : 'Menge auf ' + IV.q + ' setzen', 'haupt')); }
+  else if (sc === 'zust') { f = 'In welchem Zustand?'; w = Object.entries(ZU_L).map(([k, t], n) => B(k, t, n ? '' : 'haupt')).join(''); }
+  else if (sc === 'was') { f = IV.zust === 'defekt' ? 'Was ist kaputt?' : 'Was ist eingeschränkt?'; w = `<label class="feld" style="margin-top:0"><textarea id="ivNote" placeholder="kurz beschreiben"></textarea></label><div class="fotofeld">${IV.foto ? `<div class="bild foto"><img src="${IV.foto}" alt=""></div>` : ''}<button class="kn" data-a="ivWasFoto">${IC.foto} Foto dazu</button></div>` + B('weiter', 'Weiter', 'haupt'); }
+  else if (/^f\d/.test(sc)) { f = fragenFuer(i)[+sc.slice(1)].f; w = B('ja', 'Ja', 'haupt') + B('nein', 'Nein') + B('skip', 'Nicht geprüft'); }
+  else if (sc === 'ort') { const orte = [...new Set([IV.lastOrt, i.ort, ...IT.map(x => x.ort)].filter(Boolean))].slice(0, 8); f = 'Wo liegt es?'; w = (orte.length ? `<div class="dazu">${orte.map(o => `<button data-a="ivOrt" data-v="${esc(o)}" style="padding:0 14px;min-height:48px">${esc(o)}</button>`).join('')}</div>` : '') + `<label class="feld" style="margin-top:4px">Neuer Ort<input id="ivOrtN" placeholder="z. B. Regal 2, Koffer FX3" autocomplete="off"></label>` + B('weiter', 'Weiter', 'haupt') + B('skip', 'Überspringen'); }
+  else if (sc === 'sn') { f = 'Seriennummer?'; w = `<label class="feld" style="margin-top:0"><input id="ivSnN" autocapitalize="characters" autocomplete="off" placeholder="steht meist unten am Gerät"></label>` + B('weiter', 'Speichern', 'haupt') + B('skip', 'Überspringen'); }
+  else if (sc === 'foto') { f = 'Es gibt noch kein Foto.'; w = `<button data-a="ivFoto" class="haupt"><span>Foto aufnehmen</span></button>` + B('skip', 'Überspringen'); }
+  else if (sc === 'nutz') { f = 'Wie oft ist das im Einsatz?'; w = B('oft', 'Oft', 'haupt') + B('selten', 'Selten') + B('weg', 'Nie, kann eigentlich weg'); }
+  $('#ivIn', l).innerHTML = `<div class="tipp num">${IV.n + 1} von ${IV.ids.length} · Frage ${IV.st + 1} von ${steps.length}</div><div class="bahn"><i style="width:${(IV.n + IV.st / steps.length) / IV.ids.length * 100}%"></i></div>
+    <div class="${rein ? 'karte-rein' : ''}" id="rgK"><div class="ivkopf">${bild(i)}<div><h4>${esc(i.n)}</h4><p>${esc(i.m || KAT[i.k])}${i.q > 1 ? ' · Soll ' + i.q + ' Stück' : ''}</p></div></div>
+    <div class="ivfrage">${f}</div><div class="wahlliste">${w}</div></div>
+    ${IV.st || IV.sub ? '<p><button class="kn leise voll" data-a="ivZurueck">Eine Frage zurück</button></p>' : ''}`;
+  l.scrollTop = 0;
+}
+function ivNext() { const i = BY[IV.ids[IV.n]]; IV.sub = null; IV.st++; if (!i || IV.st >= ivSchritte(i).length) return ivFertig(); ivZeichne(); }
+function ivFertig() {
+  const id = IV.ids[IV.n];
+  patch(id, { z: 'ok', lc: heute(), frage: '', ...(IV.zust ? { zust: IV.zust } : {}), mangel: IV.mangel.join('; ') });
+  S.inv.done[id] = Date.now(); log(id, 'ok', 'Bestandsaufnahme' + (IV.zust ? ': ' + ZU_L[IV.zust] : ''));
+  save(); rechne(); zeichne(); vibr(); ivWeiter();
+}
+function ivWeiter() { const k = $('#rgK'); if (k) k.classList.add('karte-raus'); setTimeout(() => { IV.n++; IV.st = 0; IV.sub = null; IV.zust = null; IV.mangel = []; IV.foto = ''; ivZeichne(true); }, 240); }
+function ivEnde(kat) {
+  const l = leib(); if (!l) return;
+  const next = katListe().find(k => k !== kat && ivOffen(k).length), rest = ivOffen(kat).length;
+  $('#ivIn', l).innerHTML = `<div style="padding:20px 0 6px"><div style="width:72px;height:72px;margin:0 auto;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center">${IC.hak.replace('<svg', '<svg width="36" height="36"')}</div><h4>${KAT[kat]} ist durch.</h4><p>${rest ? rest + ' hast du auf später geschoben.' : 'Alle Positionen erfasst.'}</p></div>
+    <div class="ivfrage" style="text-align:center">Liegt bei ${KAT[kat]} noch etwas, das nicht aufgetaucht ist?</div>
+    <div class="wahlliste"><button data-a="ivNeu" data-v="${kat}"><span>Ja, eintragen</span><small>neu dazugekommen</small></button>${next ? `<button class="haupt" data-a="inventur" data-v="${next}"><span>Nein, weiter mit ${KAT[next]}</span><small>${ivOffen(next).length} offen</small></button>` : `<button class="haupt" data-a="ivSchluss"><span>Nein, fertig</span></button>`}</div>`;
+}
+function vInventur() {
+  const ges = IT.length, done = IT.filter(i => S.inv.done[i.id]).length, next = katListe().find(k => ivOffen(k).length);
+  const mang = IT.filter(i => i.mangel), weg = IT.filter(i => i.nutz === 'weg'), selten = IT.filter(i => i.nutz === 'selten');
+  const fe = IT.filter(i => i.fehlt), de = IT.filter(i => i.def), kauf = S.bed.filter(b => b.st === 'offen' && b.grund);
+  const befund = (t, l, f) => l.length ? `<h2 style="font-size:18px">${t} <small>${l.length}</small></h2><div class="zeilen">${l.map(f).join('')}</div>` : '';
+  const gz = (i, sub) => `<button class="zeile" data-a="geraet" data-id="${i.id}">${bild(i)}<div class="t"><b>${esc(i.n)}</b><span>${esc(sub)}</span></div><span></span></button>`;
+  return `<h2>Bestandsaufnahme <small>${S.inv.start ? 'seit ' + tag(S.inv.start) : 'noch nicht begonnen'}</small></h2>
+  <div class="iv-stand"><div><b class="gross-zahl num">${done}</b><span> von ${ges} erfasst</span></div><div class="bahn"><i style="width:${ges ? done / ges * 100 : 0}%"></i></div></div>
+  ${next ? `<p><button class="kn haupt gross voll" data-a="inventur" data-v="${next}">${IC.regal} ${done ? 'Weiter mit' : 'Los, mit'} ${KAT[next]}</button></p><p class="notiz">Je Gerät ein paar Fragen zum Antippen: da, Zustand, vollständig, Standort. Was fehlt, landet automatisch im Einkauf. Du kannst jederzeit aufhören, der Stand bleibt.</p>` : '<p class="leer">Alles erfasst. Unten kannst du den Stand übergeben.</p>'}
+  <div>${katListe().map(k => { const a = IT.filter(i => i.k === k), d = a.filter(i => S.inv.done[i.id]).length; return `<div class="katz"><b>${KAT[k]} <span class="num" style="font-weight:400;color:var(--mute)">${d} von ${a.length}</span></b><button class="kn ${d === a.length ? 'leise' : ''}" data-a="${d === a.length ? 'ivNeu' : 'inventur'}" data-v="${k}">${d === a.length ? '+ Neues' : d ? 'Weiter' : 'Start'}</button><div class="bahn"><i style="width:${d / a.length * 100}%"></i></div></div>`; }).join('')}</div>
+  <h2>Neu dazugekommen <small>${S.neu.filter(i => !(S.it[i.id] || {}).arch).length}</small></h2>
+  <div class="zeilen">${IT.filter(i => S.neu.some(n => n.id === i.id)).map(i => gz(i, KAT[i.k] + (i.q > 1 ? ' · ' + i.q + ' Stück' : ''))).join('')}</div>
+  <p><button class="kn gross voll" data-a="neu">${IC.neu} Neues Gerät eintragen</button></p>
+  ${done ? '<h2>Befunde</h2>' : ''}
+  ${befund('Fehlt', fe, i => gz(i, i.fehlt + ' von ' + i.q))}${befund('Defekt', de, i => gz(i, (S.mel.find(m => !m.zu && m.itemId === i.id && m.art !== 'fehlt') || {}).note || ''))}
+  ${befund('Eingeschränkt', mang, i => gz(i, i.mangel))}
+  ${befund('Nachkaufen', kauf, b => `<div class="zeile ohne"><div class="t"><b>${esc(b.t)}</b><span>aus der Bestandsaufnahme</span></div><button class="kn leise" data-a="tab" data-tab="einkauf">Einkauf</button></div>`)}
+  ${befund('Selten im Einsatz', selten, i => gz(i, KAT[i.k]))}${befund('Kann weg', weg, i => gz(i, KAT[i.k]))}
+  <h2>Stand übergeben</h2>
+  <div class="zeilen">
+    <div class="zeile ohne"><div class="t"><b>Stand als Datei</b><span>Alles Erfasste samt Fotos, zum Einspielen in den Grundbestand</span></div><button class="kn" data-a="export">Speichern</button></div>
+    <div class="zeile ohne"><div class="t"><b>Kurzbericht</b><span>Zahlen und Befunde als Text zum Weiterschicken</span></div><button class="kn" data-a="ivBericht">Teilen</button></div>
+    <div class="zeile ohne"><div class="t"><b>Neue Runde</b><span>Setzt nur den Fortschritt zurück, nicht die Antworten</span></div><button class="kn leise" data-a="ivReset">Neu beginnen</button></div>
+  </div>`;
+}
+function vEinkauf() {
+  const g = st => S.bed.filter(b => b.st === st);
+  const z = (b, kn) => `<div class="zeile ohne breit2"><div class="t"><b>${esc(b.t)}</b><span>${esc(b.grund || b.wer || '')}${b.ts ? ' · ' + tag(new Date(b.ts).toISOString()) : ''}</span></div><div class="akt">${kn.map(([a, t, kl]) => `<button class="kn ${kl || ''}" data-a="${a}" data-id="${b.id}">${t}</button>`).join('')}</div></div>`;
+  const off = g('offen'), best = g('bestellt'), da = g('da').slice(-8).reverse();
+  return `<h2>Einkauf <small>${off.length} zu besorgen</small></h2>
+  <div class="suche">${IC.plus}<input id="bedN" enterkeyhint="done" autocomplete="off" placeholder="Was brauchen wir? Eintippen und Enter" aria-label="Bedarf eintragen"></div>
+  <div class="zeilen" style="margin-top:12px">${off.map(b => z(b, [['bedBest', 'Bestellt'], ['bedDa', 'Ist da', 'leise'], ['bedWeg', '✕', 'leise']])).join('') || '<p class="leer">Nichts offen.</p>'}</div>
+  ${off.length ? `<p><button class="kn" data-a="bedTeilen">Liste teilen</button></p>` : ''}
+  <h2>Bestellt, noch nicht da <small>${best.length}</small></h2>
+  <div class="zeilen">${best.map(b => z(b, [['bedDa', 'Ist da'], ['bedOffen', 'Doch nicht', 'leise']])).join('') || '<p class="leer">Nichts unterwegs.</p>'}</div>
+  ${da.length ? `<h2>Angekommen</h2><div class="zeilen">${da.map(b => z(b, b.inv ? [] : [['bedInv', 'Ins Inventar']])).join('')}</div>` : ''}`;
+}
 
 /* ---------- Handlungen ---------- */
 const A = {
@@ -560,7 +670,8 @@ const A = {
     if (id) { patch(id, o); log(id, 'ok', 'Angaben geändert'); }
     else { id = 'n' + uid(); S.neu.push({ id, ...o, z: 'ok', lc: heute(), b: '' }); log(id, 'ok', 'neu angelegt'); }
     if (NE.foto) { fotoSichern(id, NE.foto); patch(id, { b: 'idb:' + id }); }
-    const neu = !NE.id; NE = null; zuBlatt(true); fertig(neu ? n + ' angelegt' : 'Gespeichert'); },
+    const neu = !NE.id; NE = null; zuBlatt(true); if (neu && S.inv.start) S.inv.done[id] = Date.now(); fertig(neu ? n + ' angelegt' : 'Gespeichert');
+    if (NACH_NEU) { const k = NACH_NEU; NACH_NEU = null; if (neu) { IV = { kat: k, ids: [], n: 0, st: 0, mangel: [], lastOrt: IV ? IV.lastOrt : '' }; blatt(KAT[k], '<div class="pruef" id="ivIn"></div>'); ivEnde(k); } } },
   archiv: d => { if (!confirm('Wirklich aus dem Bestand nehmen?')) return; patch(d.id, { arch: true }); log(d.id, 'aus', 'aus dem Bestand genommen'); zuBlatt(true); fertig('Entfernt'); },
   rgQ: d => { RG.q = Math.max(0, RG.q + +d.v); rgZeichne(); }, rgWeiter: () => rgWeiter(),
   rgOk: () => { const i = BY[RG.ids[RG.n]];
@@ -582,6 +693,51 @@ const A = {
     e.innerHTML = IT.map(i => { const q = qrcode(0, 'M'); q.addData(base + i.id); q.make(); return `<div class="etikett">${q.createSvgTag({ cellSize: 2, margin: 0, scalable: true })}<div>${esc(i.n)}<small>${KAT[i.k]}${i.sn ? ' · ' + esc(i.sn) : ''}</small><small>Mainfilm</small></div></div>`; }).join('');
     setTimeout(() => window.print(), 80); },
 };
+
+Object.assign(A, {
+  inventur: d => bInventur(d.v), ivSchluss: () => { zuBlatt(); geh('inventur'); },
+  ivQ: d => { const i = BY[IV.ids[IV.n]]; IV.q = Math.max(0, IV.q + +d.v); ivZeichne(); },
+  ivZurueck: () => { if (IV.sub) IV.sub = null; else if (IV.st > 0) IV.st--; ivZeichne(); },
+  ivA: d => { const i = BY[IV.ids[IV.n]]; if (!i) return; const sc = IV.sub || ivSchritte(i)[IV.st], v = d.v;
+    const fehltMeld = q => { if (q > 0) melde(i.id, 'fehlt', q, 'bei der Bestandsaufnahme nicht gefunden'); };
+    if (sc === 'da') {
+      if (v === 'ja') return ivNext();
+      if (v === 'schnell') { IV.zust = 'top'; return ivFertig(); }
+      if (v === 'teil') { IV.sub = 'menge'; IV.q = Math.max(0, i.q - 1); return ivZeichne(); }
+      if (v === 'nein') { fehltMeld(i.q - i.fehlt); return ivFertig(); }
+      if (v === 'weg') { if (!confirm(i.n + ' endgültig aus dem Bestand nehmen?')) return; patch(i.id, { arch: true }); log(i.id, 'aus', 'bei der Bestandsaufnahme ausgebucht'); return ivFertig(); }
+      if (v === 'spaeter') return ivWeiter();
+    }
+    if (sc === 'menge') { if (v === 'fehlen') fehltMeld(i.q - IV.q - i.fehlt); else if (IV.q !== i.q) { if (IV.q === 0) { patch(i.id, { arch: true }); log(i.id, 'aus', 'Menge 0, ausgebucht'); return ivFertig(); } patch(i.id, { q: IV.q }); log(i.id, 'ok', `Menge von ${i.q} auf ${IV.q} korrigiert`); }
+      save(); rechne(); if (IV.q === 0) return ivFertig(); return ivNext(); }
+    if (sc === 'zust') { IV.zust = v; if (v === 'eing' || v === 'defekt') { IV.sub = 'was'; return ivZeichne(); } return ivNext(); }
+    if (sc === 'was') { const note = $('#ivNote').value.trim(); let fk = ''; if (IV.foto) { fk = 'm' + uid(); fotoSichern(fk, IV.foto); }
+      if (IV.zust === 'defekt') { if (!i.def) melde(i.id, 'defekt', 1, note || 'bei der Bestandsaufnahme als defekt erfasst', fk); } else IV.mangel.push(note || 'eingeschränkt');
+      save(); rechne(); return ivNext(); }
+    if (/^f\d/.test(sc)) { if (v === 'nein') { const c = fragenFuer(i)[+sc.slice(1)].nein;
+        if (c.kauf && !S.bed.some(b => b.t === c.kauf && b.st !== 'da')) S.bed.push({ id: uid(), t: c.kauf, wer: S.me, ts: Date.now(), st: 'offen', grund: 'Bestandsaufnahme', zu: null });
+        if (c.mangel) { IV.mangel.push(c.mangel); if (IV.zust === 'top' || IV.zust === 'ok') IV.zust = 'eing'; } }
+      return ivNext(); }
+    if (sc === 'ort') { if (v === 'weiter') { const o = $('#ivOrtN').value.trim(); if (o) { patch(i.id, { ort: o }); IV.lastOrt = o; } } return ivNext(); }
+    if (sc === 'sn') { if (v === 'weiter') { const o = $('#ivSnN').value.trim(); if (!o) return $('#ivSnN').focus(); patch(i.id, { sn: o }); } return ivNext(); }
+    if (sc === 'foto') return ivNext();
+    if (sc === 'nutz') { patch(i.id, { nutz: v }); return ivNext(); }
+  },
+  ivOrt: d => { const i = BY[IV.ids[IV.n]]; patch(i.id, { ort: d.v }); IV.lastOrt = d.v; ivNext(); },
+  ivFoto: () => { const i = BY[IV.ids[IV.n]]; fotoWahl(url => { fotoSichern(i.id, url); patch(i.id, { b: 'idb:' + i.id }); save(); rechne(); ivNext(); }); },
+  ivWasFoto: () => fotoWahl(url => { const n = $('#ivNote').value; IV.foto = url; ivZeichne(); $('#ivNote').value = n; }),
+  ivNeu: d => { bNeu(''); NACH_NEU = d.v; NE.k = d.v; NE.auto = false; $('#neK').value = d.v; },
+  ivReset: () => { if (!confirm('Fortschritt der Bestandsaufnahme zurücksetzen? Antworten und Zustände bleiben erhalten.')) return; S.inv = { start: '', done: {} }; fertig('Neue Runde'); },
+  ivBericht: () => { const done = IT.filter(i => S.inv.done[i.id]).length; const L = (t, l) => l.length ? `\n${t}: ${l.join(', ')}` : '';
+    teilen(`Mainfilm Inventar, Stand ${tag(heute())}: ${done} von ${IT.length} Positionen erfasst.` + L('Fehlt', IT.filter(i => i.fehlt).map(i => i.n)) + L('Defekt', IT.filter(i => i.def).map(i => i.n)) + L('Eingeschränkt', IT.filter(i => i.mangel).map(i => i.n + ' (' + i.mangel + ')')) + L('Neu', IT.filter(i => S.neu.some(n => n.id === i.id)).map(i => i.n)) + L('Kann weg', IT.filter(i => i.nutz === 'weg').map(i => i.n)) + L('Zu besorgen', S.bed.filter(b => b.st === 'offen').map(b => b.t))); },
+  bedBest: d => { const b = S.bed.find(x => x.id === d.id); if (b) { b.st = 'bestellt'; b.ts = Date.now(); fertig('Als bestellt markiert'); } },
+  bedOffen: d => { const b = S.bed.find(x => x.id === d.id); if (b) { b.st = 'offen'; fertig(); } },
+  bedWeg: d => { S.bed = S.bed.filter(x => x.id !== d.id); fertig('Gestrichen'); },
+  bedDa: d => { const b = S.bed.find(x => x.id === d.id); if (!b) return; b.st = 'da'; b.zu = Date.now(); fertig('Angekommen');
+    blatt('Angekommen', `<p style="margin-top:0"><b>${esc(b.t)}</b> ist da. Soll es als Gerät ins Inventar?</p>`, `<button class="kn" data-a="zu">Nein</button><button class="kn haupt" data-a="bedInv" data-id="${b.id}">Ins Inventar</button>`); },
+  bedInv: d => { const b = S.bed.find(x => x.id === d.id); if (!b) return; b.inv = 1; save(); bNeu(b.t.replace(/, \d+ Stück$/, '')); },
+  bedTeilen: () => teilen('Einkauf Mainfilm Equipment:\n' + S.bed.filter(b => b.st === 'offen').map(b => '• ' + b.t).join('\n')),
+});
 let ZU = null;
 document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (!el || el.disabled) return; const f = A[el.dataset.a]; if (f) f(el.dataset, el, e); });
 document.addEventListener('input', e => {
@@ -600,19 +756,19 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') zuBlatt();
   if (e.key === 'Enter' && e.target.id === 'q') { const c = befehl(F.q); if (c) A.befehl(); }
   if (e.key === 'Enter' && e.target.id === 'ichN') A.nameOk();
-  if (e.key === 'Enter' && e.target.id === 'bedN' && e.target.value.trim()) { if (!brauchtName(() => {})) return; S.bed.push({ id: uid(), t: e.target.value.trim(), wer: S.me, ts: Date.now(), zu: null }); fertig('Notiert'); }
+  if (e.key === 'Enter' && e.target.id === 'bedN' && e.target.value.trim()) { if (!brauchtName(() => {})) return; S.bed.push({ id: uid(), t: e.target.value.trim(), wer: S.me, ts: Date.now(), st: 'offen', zu: null }); fertig('Notiert'); const f = $('#bedN'); f && f.focus(); }
 });
 function weg() {
   const h = location.hash.replace(/^#\/?/, '');
   if (h.startsWith('g/')) { VIEW = 'bestand'; zeichne(); bGeraet(decodeURIComponent(h.slice(2))); }
-  else if (['heute', 'bestand', 'projekte', 'mehr'].includes(h)) geh(h, true);
+  else if (['heute', 'bestand', 'inventur', 'einkauf', 'projekte', 'mehr'].includes(h)) geh(h, true);
   else geh('heute', true);
 }
 window.addEventListener('hashchange', weg);
 
 (async () => {
   await idbAuf(); await fotosLaden();
-  $('#unten').innerHTML = [['heute', 'Heute'], ['bestand', 'Bestand']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k]}${l}</button>`).join('') + `<button class="plus" data-a="plus" aria-label="Aktion">${IC.plus}</button>` + [['projekte', 'Projekte'], ['mehr', 'Mehr']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k]}${l}</button>`).join('');
+  $('#unten').innerHTML = [['heute', 'Heute'], ['bestand', 'Bestand']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k]}${l}</button>`).join('') + `<button class="plus" data-a="plus" aria-label="Aktion">${IC.plus}</button>` + [['inventur', 'Inventur'], ['mehr', 'Mehr']].map(([k, l]) => `<button data-a="tab" data-tab="${k}">${IC[k === 'inventur' ? 'regal' : k]}${l}</button>`).join('');
   rechne(); weg();
   if (!S.me && !location.hash.startsWith('#/g/')) brauchtName(() => {});
 })();
