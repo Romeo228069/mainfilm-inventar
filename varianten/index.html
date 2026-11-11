@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Inventar · drei Richtungen</title>
+<style>
+:root{--mag:#c1427e;--aub:#35024c;--nacht:#07000b;--display:"Futura","Futura PT","Jost","Century Gothic",sans-serif;--text:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;--feder:cubic-bezier(.34,1.56,.64,1);--weich:cubic-bezier(.3,.7,.2,1)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#111014;color:#f4eff7;font:400 16px/1.4 var(--text);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+img{display:block;max-width:100%}
+.kopf{padding:28px 20px 8px;max-width:1240px;margin:0 auto}
+.kopf h1{font:italic 800 clamp(30px,6vw,46px)/1 var(--display);text-transform:uppercase;margin:0 0 8px}
+.kopf p{margin:0;color:#b9afc2;max-width:60ch}
+.wahl{position:sticky;top:0;z-index:5;display:flex;gap:8px;padding:12px 20px;background:rgba(17,16,20,.82);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);max-width:1240px;margin:0 auto}
+.wahl button{flex:1;min-height:46px;border-radius:12px;background:#221f27;font-weight:600;transition:background .2s linear,transform .3s var(--feder)}
+.wahl button[aria-pressed="true"]{background:var(--mag);transform:scale(1.03)}
+.buehne{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;padding:20px;max-width:1240px;margin:0 auto}
+.richtung h2{font:italic 800 22px/1 var(--display);text-transform:uppercase;margin:0 0 4px}
+.richtung>p{margin:0 0 14px;color:#b9afc2;font-size:14px;min-height:3.9em}
+.tel{border-radius:38px;overflow:hidden;position:relative;height:780px;box-shadow:0 0 0 1px #2c2833,0 30px 60px rgba(0,0,0,.5)}
+.tel .rollen{height:100%;overflow:auto;padding-bottom:110px;scrollbar-width:none}
+.tel .rollen::-webkit-scrollbar{display:none}
+@media(max-width:900px){.buehne{grid-template-columns:1fr;padding:12px}.richtung{display:none}.richtung.an{display:block}.tel{height:calc(100dvh - 170px);min-height:560px;border-radius:28px}.richtung>p{min-height:0}}
+@media(min-width:901px){.wahl{display:none}}
+.druck{transition:transform .25s var(--feder)}.druck:active{transform:scale(.96)}
+@keyframes rein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.r1{animation:rein .5s var(--weich) both}.r2{animation:rein .5s .07s var(--weich) both}.r3{animation:rein .5s .14s var(--weich) both}.r4{animation:rein .5s .21s var(--weich) both}
+svg{display:block}
+
+/* ---------- A: Regal (hell, Bild zuerst) ---------- */
+.A{background:#f5f5f7;color:#1d1d1f}
+.A .oben{padding:54px 20px 6px;display:flex;justify-content:space-between;align-items:center}
+.A .oben b{font:italic 800 30px/1 var(--display);text-transform:uppercase}
+.A .ich{width:36px;height:36px;border-radius:50%;background:var(--mag);color:#fff;display:grid;place-items:center;font-weight:700}
+.A .such{margin:12px 20px 0;height:50px;border-radius:14px;background:#e8e8ed;display:flex;align-items:center;gap:10px;padding:0 14px;color:#6e6e73}
+.A .kat{display:flex;gap:22px;padding:18px 20px 6px;overflow:auto;scrollbar-width:none;font-weight:600;color:#86868b;white-space:nowrap}
+.A .kat span:first-child{color:#1d1d1f;box-shadow:0 2px 0 var(--mag);padding-bottom:6px}
+.A .gitter{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 20px}
+.A .karte{background:#fff;border-radius:20px;padding:10px 10px 14px;text-align:left;position:relative}
+.A .karte img{aspect-ratio:1;width:100%;object-fit:contain;mix-blend-mode:multiply}
+.A .karte b{display:block;font-size:15px;line-height:1.2;margin-top:6px}
+.A .karte small{font-size:13px;color:#6e6e73;display:flex;align-items:center;gap:6px;margin-top:3px}
+.A .pkt,.B .pkt,.C .pkt{width:8px;height:8px;border-radius:50%;background:#30b46c;flex:none}
+.pkt.rot{background:#e5484d!important}.pkt.gelb{background:#e0a100!important}.pkt.blau{background:#5b7cfa!important}
+.A .leiste{position:absolute;left:14px;right:14px;bottom:18px;height:66px;border-radius:26px;background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);display:grid;grid-template-columns:1fr 1fr 74px 1fr 1fr;align-items:center;text-align:center;font-size:11px;font-weight:600;color:#86868b;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.A .leiste svg,.B .leiste svg{width:24px;height:24px;margin:0 auto 2px}
+.A .leiste .an{color:var(--mag)}
+.A .scan,.B .scan{width:60px;height:60px;border-radius:50%;background:var(--mag);color:#fff;display:grid;place-items:center;margin:-26px auto 0;box-shadow:0 8px 22px rgba(193,66,126,.5)}
+.A .scan svg,.B .scan svg{width:28px;height:28px;margin:0}
+
+/* ---------- B: Leitstand (dunkel, Zahlen und Handlung) ---------- */
+.B{background:linear-gradient(160deg,var(--aub),var(--nacht) 46%);color:#fff}
+.B .oben{padding:56px 22px 0}
+.B .oben small{color:#cdb9d8;font-size:14px}
+.B .oben b{display:block;font:italic 800 34px/1 var(--display);text-transform:uppercase;margin-top:4px}
+.B .ringreihe{display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:center;padding:22px}
+.B .ring{position:relative;width:132px;height:132px}
+.B .ring svg{transform:rotate(-90deg)}
+.B .ring circle{fill:none;stroke-width:11;stroke-linecap:round}
+.B .ring .bahn{stroke:rgba(255,255,255,.12)}
+.B .ring .wert{stroke:var(--mag);stroke-dasharray:352;stroke-dashoffset:352;animation:zieh 1.2s .2s var(--weich) forwards}
+@keyframes zieh{to{stroke-dashoffset:19}}
+.B .ring div{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
+.B .ring b{font:italic 800 34px/1 var(--display)}
+.B .ring small{display:block;font-size:11px;color:#cdb9d8;margin-top:4px}
+.B .werte{display:grid;gap:10px;font-size:15px}
+.B .werte div{display:flex;align-items:center;gap:8px}
+.B .werte b{margin-left:auto;font-variant-numeric:tabular-nums}
+.B .drei{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 22px}
+.B .drei button{aspect-ratio:1;border-radius:22px;background:rgba(255,255,255,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px}
+.B .drei button:first-child{background:var(--mag)}
+.B .drei svg{width:30px;height:30px}
+.B h3{font:italic 800 17px/1 var(--display);text-transform:uppercase;margin:26px 22px 12px;display:flex;justify-content:space-between;align-items:baseline}
+.B h3 small{font:400 13px var(--text);text-transform:none;color:#cdb9d8}
+.B .zug{display:flex;gap:12px;overflow:auto;padding:0 22px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.B .zug::-webkit-scrollbar{display:none}
+.B .fall{flex:0 0 78%;scroll-snap-align:start;border-radius:22px;background:#f1edf4;color:#16101b;padding:14px;display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;text-align:left}
+.B .fall img{width:84px;height:84px;object-fit:contain;mix-blend-mode:multiply}
+.B .fall i{font-style:normal;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#c22f35}
+.B .fall i.gelb{color:#9a6a00}
+.B .fall b{display:block;font-size:16px;line-height:1.2;margin:2px 0}
+.B .fall span{font-size:13px;color:#5d5566}
+.B .proj{margin:0 22px;border-radius:22px;background:rgba(255,255,255,.08);padding:14px;text-align:left;width:calc(100% - 44px)}
+.B .proj b{font:italic 800 18px/1 var(--display);text-transform:uppercase}
+.B .proj small{display:block;color:#cdb9d8;font-size:13px;margin:4px 0 10px}
+.B .proj div{display:flex;gap:6px}
+.B .proj img{width:48px;height:48px;border-radius:10px;background:#f1edf4;object-fit:contain;padding:3px}
+.B .leiste{position:absolute;left:14px;right:14px;bottom:18px;height:66px;border-radius:26px;background:rgba(30,18,38,.72);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);display:grid;grid-template-columns:1fr 1fr 1fr 1fr;align-items:center;text-align:center;font-size:11px;font-weight:600;color:#a895b4;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.B .leiste .an{color:#fff}
+
+/* ---------- C: Schritt für Schritt (eine Frage, große Antworten) ---------- */
+.C{background:#fff;color:#16101b}
+.C .oben{padding:60px 22px 4px}
+.C .oben small{color:#6f6678;font-size:15px}
+.C .oben b{display:block;font:italic 800 34px/1.02 var(--display);text-transform:uppercase;margin-top:6px;text-wrap:balance}
+.C .weg{display:grid;gap:12px;padding:20px 22px 0}
+.C .weg button{display:grid;grid-template-columns:1fr 104px;align-items:center;text-align:left;border-radius:26px;min-height:118px;padding:0 0 0 20px;overflow:hidden;background:#f3eff6}
+.C .weg button:first-child{background:linear-gradient(135deg,var(--aub),#12021c);color:#fff}
+.C .weg b{display:block;font-size:20px;line-height:1.15}
+.C .weg span{display:block;font-size:14px;opacity:.72;margin-top:4px}
+.C .weg img{width:104px;height:118px;object-fit:contain;mix-blend-mode:multiply;padding:10px}
+.C .weg button:first-child img{mix-blend-mode:normal;background:#f1edf4;border-radius:22px 0 0 22px;height:100%}
+.C .stand{margin:18px 22px 0;padding:16px 0 0;border-top:1px solid #e6e0ea;display:grid;grid-template-columns:repeat(3,1fr);text-align:left}
+.C .stand b{display:block;font:italic 800 28px/1 var(--display)}
+.C .stand small{font-size:13px;color:#6f6678;display:flex;align-items:center;gap:6px;margin-top:4px}
+.C .hinweis{margin:18px 22px 0;border-radius:20px;background:#fdeceb;padding:14px 16px;display:flex;gap:12px;align-items:center;text-align:left;width:calc(100% - 44px)}
+.C .hinweis b{display:block;font-size:15px}.C .hinweis span{font-size:13px;color:#7a4a4a}
+.C .hinweis em{font-style:normal;margin-left:auto;font-weight:700;color:#c22f35}
+.C .unten{position:absolute;left:0;right:0;bottom:0;padding:14px 22px 26px;background:linear-gradient(transparent,#fff 34%);display:flex;gap:10px}
+.C .unten button{flex:1;min-height:56px;border-radius:18px;background:#f3eff6;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.C .unten button:first-child{background:var(--mag);color:#fff;flex:1.4}
+.C .unten svg{width:22px;height:22px}
+
+.fuss{max-width:1240px;margin:0 auto;padding:8px 20px 60px;color:#b9afc2;font-size:14px}
+.fuss b{color:#f4eff7}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="kopf">
+  <h1>Drei Richtungen</h1>
+  <p>Gleiche Daten, gleiche Funktionen, drei verschiedene Arten, die App zu bedienen. Sag mir einen Buchstaben, dann baue ich die ganze App in dieser Sprache um.</p>
+</div>
+<div class="wahl" role="tablist">
+  <button aria-pressed="true" data-r="A">A · Regal</button>
+  <button aria-pressed="false" data-r="B">B · Leitstand</button>
+  <button aria-pressed="false" data-r="C">C · Schritte</button>
+</div>
+
+<div class="buehne">
+  <section class="richtung an" data-r="A">
+    <h2>A · Regal</h2>
+    <p>Die App sieht aus wie das Lager: große Fotos, eine Suche, ein Scan-Knopf. Man findet ein Gerät und handelt dort.</p>
+    <div class="tel A"><div class="rollen">
+      <div class="oben r1"><b>Inventar</b><span class="ich">R</span></div>
+      <div class="such r2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>Gerät suchen</div>
+      <div class="kat r2"><span>Alles</span><span>Kamera</span><span>Objektive</span><span>Ton</span><span>Licht</span><span>Grip</span></div>
+      <div class="gitter r3">
+        <button class="karte druck"><img src="../bilder/sony-fx3.jpg" alt=""><b>Sony FX3</b><small><i class="pkt"></i>Im Lager</small></button>
+        <button class="karte druck"><img src="../bilder/sony-a7s-iii.jpg" alt=""><b>Sony A7S III</b><small><i class="pkt blau"></i>DB ICON Folge 4</small></button>
+        <button class="karte druck"><img src="../bilder/sony-16-35.jpg" alt=""><b>Sony 16-35</b><small><i class="pkt"></i>Im Lager</small></button>
+        <button class="karte druck"><img src="../bilder/blackmagic-pocket-cinema-camera-6k-pro.jpg" alt=""><b>Blackmagic 6K Pro</b><small><i class="pkt gelb"></i>Geht beim Dreh aus</small></button>
+        <button class="karte druck"><img src="../bilder/zhiyun-molus-g300.jpg" alt=""><b>Zhiyun Molus G300</b><small><i class="pkt"></i>Im Lager</small></button>
+        <button class="karte druck"><img src="../bilder/amaran-ace-25c-kit.jpg" alt=""><b>Amaran Ace 25c</b><small><i class="pkt rot"></i>Fehlt</small></button>
+        <button class="karte druck"><img src="../bilder/rode-wireless-pro.jpg" alt=""><b>Rode Wireless Pro</b><small><i class="pkt"></i>Im Lager</small></button>
+        <button class="karte druck"><img src="../bilder/dji-rs-4-pro-focus-pro-motor.jpg" alt=""><b>DJI RS 4 Pro</b><small><i class="pkt"></i>Im Lager</small></button>
+      </div>
+    </div>
+    <div class="leiste">
+      <span class="an"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Geräte</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5V18a1 1 0 001 1h16a1 1 0 001-1V9a1 1 0 00-1-1h-8L10 5.5H4a1 1 0 00-1 1z"/></svg>Projekte</span>
+      <button class="scan druck" aria-label="Scannen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16"/></svg></button>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.3"/></svg>Offen 12</span>
+      <span><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mehr</span>
+    </div></div>
+  </section>
+
+  <section class="richtung" data-r="B">
+    <h2>B · Leitstand</h2>
+    <p>Die App sagt zuerst, wie es steht und was zu tun ist. Drei große Knöpfe für das, was man täglich macht, Probleme als Karten zum Wischen.</p>
+    <div class="tel B"><div class="rollen">
+      <div class="oben r1"><small>Hallo Romeo</small><b>Alles im Blick</b></div>
+      <div class="ringreihe r2">
+        <div class="ring"><svg viewBox="0 0 132 132" width="132" height="132"><circle class="bahn" cx="66" cy="66" r="56"/><circle class="wert" cx="66" cy="66" r="56"/></svg><div><span><b>127</b><small>von 134 da</small></span></div></div>
+        <div class="werte"><div><i class="pkt blau"></i>Unterwegs<b>2</b></div><div><i class="pkt rot"></i>Fehlt<b>8</b></div><div><i class="pkt gelb"></i>Defekt<b>4</b></div></div>
+      </div>
+      <div class="drei r3">
+        <button class="druck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16"/></svg>Scannen</button>
+        <button class="druck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h12M11 6l6 6-6 6M20 4v16"/></svg>Mitnehmen</button>
+        <button class="druck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H8M13 6l-6 6 6 6M4 4v16"/></svg>Zurück</button>
+      </div>
+      <h3 class="r4">Braucht dich <small>12</small></h3>
+      <div class="zug r4">
+        <button class="fall druck"><img src="../bilder/sony-akku-np-fz100.jpg" alt=""><div><i>Fehlt</i><b>4 von 7 Sony-Akkus</b><span>NP-FZ100 · nachbestellen?</span></div></button>
+        <button class="fall druck"><img src="../bilder/amaran-ace-25c-kit.jpg" alt=""><div><i>Fehlt</i><b>Amaran Ace 25c</b><span>Leuchte weg, Zubehör da</span></div></button>
+        <button class="fall druck"><img src="../bilder/atomos-shogun-inferno.jpg" alt=""><div><i class="gelb">Defekt</i><b>Atomos Shogun</b><span>HDMI funktioniert nicht</span></div></button>
+      </div>
+      <h3>Unterwegs <small>1 Projekt</small></h3>
+      <button class="proj druck"><b>DB ICON Folge 4</b><small>2 Teile · zurück am 14. Nov. · Romeo</small><div><img src="../bilder/sony-a7s-iii.jpg" alt=""><img src="../bilder/sony-16-35.jpg" alt=""></div></button>
+    </div>
+    <div class="leiste">
+      <span class="an"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7v8.5a.5.5 0 01-.5.5H15v-6H9v6H4.5a.5.5 0 01-.5-.5z"/></svg>Start</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Geräte</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5V18a1 1 0 001 1h16a1 1 0 001-1V9a1 1 0 00-1-1h-8L10 5.5H4a1 1 0 00-1 1z"/></svg>Projekte</span>
+      <span><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mehr</span>
+    </div></div>
+  </section>
+
+  <section class="richtung" data-r="C">
+    <h2>C · Schritte</h2>
+    <p>Die App fragt, was du vorhast, und führt dich durch. Keine Menüs, vier große Antworten. Am einfachsten für Leute, die sie selten benutzen.</p>
+    <div class="tel C"><div class="rollen">
+      <div class="oben r1"><small>Hallo Romeo</small><b>Was hast du vor?</b></div>
+      <div class="weg">
+        <button class="druck r2"><div><b>Ich nehme etwas mit</b><span>Scannen oder auswählen</span></div><img src="../bilder/sony-fx3.jpg" alt=""></button>
+        <button class="druck r2"><div><b>Ich bringe etwas zurück</b><span>1 Projekt unterwegs</span></div><img src="../bilder/sony-a7s-iii.jpg" alt=""></button>
+        <button class="druck r3"><div><b>Etwas ist kaputt oder fehlt</b><span>Mit Foto melden</span></div><img src="../bilder/atomos-shogun-inferno.jpg" alt=""></button>
+        <button class="druck r3"><div><b>Ich suche etwas</b><span>134 Positionen</span></div><img src="../bilder/zhiyun-molus-g300.jpg" alt=""></button>
+      </div>
+      <button class="hinweis druck r4"><div><b>12 Dinge brauchen jemanden</b><span>8 fehlen, 4 defekt</span></div><em>Ansehen</em></button>
+      <div class="stand r4"><div><b>127</b><small><i class="pkt"></i>da</small></div><div><b>2</b><small><i class="pkt blau"></i>unterwegs</small></div><div><b>12</b><small><i class="pkt rot"></i>offen</small></div></div>
+    </div>
+    <div class="unten">
+      <button class="druck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16"/></svg>Code scannen</button>
+      <button class="druck">Mehr</button>
+    </div></div>
+  </section>
+</div>
+<p class="fuss">Das sind Standbilder der Startseite mit echten Daten. Knöpfe reagieren auf Druck, führen aber noch nirgends hin. <b>Mischen geht auch</b>, zum Beispiel „B, aber hell“ oder „C als Start, A für die Geräteliste“.</p>
+<script>
+document.querySelectorAll('.wahl button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.wahl button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.querySelectorAll('.richtung').forEach(r=>r.classList.toggle('an',r.dataset.r===b.dataset.r));
+  window.scrollTo({top:0});
+}));
+</script>
+</body>
+</html>
